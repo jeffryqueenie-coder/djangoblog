@@ -232,6 +232,53 @@ class ArticleTest(TestCase):
         call_command("build_search_words")
 
 
+class EditorialRedesignTemplateTest(TestCase):
+    def setUp(self):
+        self.user = BlogUser.objects.create_user(
+            username="editor",
+            email="editor@example.com",
+            password="password123",
+        )
+        self.category = Category.objects.create(name="后端技术")
+        self.tag = Tag.objects.create(name="Django")
+        self.article = Article.objects.create(
+            title="Django 架构实践",
+            body="这是一篇关于 Django 博客架构实践的文章。",
+            author=self.user,
+            category=self.category,
+            type="a",
+            status="p",
+        )
+        self.article.tags.add(self.tag)
+        self.next_article = Article.objects.create(
+            title="FastAPI 部署实践",
+            body="这是一篇关于 FastAPI 服务部署的文章。",
+            author=self.user,
+            category=self.category,
+            type="a",
+            status="p",
+        )
+        self.next_article.tags.add(self.tag)
+
+    def test_index_uses_editorial_redesign_structure(self):
+        response = self.client.get(reverse("blog:index"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "editorial-shell")
+        self.assertContains(response, "editorial-article-card")
+        self.assertContains(response, "editorial-sidebar")
+        self.assertContains(response, "djangoblog-theme")
+        self.assertNotContains(response, "prefers-color-scheme: dark').matches")
+
+    def test_article_detail_uses_editorial_redesign_structure(self):
+        response = self.client.get(self.article.get_absolute_url())
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "editorial-detail-card")
+        self.assertContains(response, "editorial-article-body")
+        self.assertContains(response, "editorial-post-nav")
+
+
 class SearchHighlightTest(TestCase):
     """测试搜索高亮功能"""
 

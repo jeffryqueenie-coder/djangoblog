@@ -37,31 +37,31 @@
 /* ==================== 主题配色方案 CSS 变量 ==================== */
 :root {
   /* 默认主题：紫色 Purple Dream */
-  --color-primary-50: 240 249 255;
-  --color-primary-100: 224 242 254;
-  --color-primary-200: 186 230 253;
-  --color-primary-300: 125 211 252;
-  --color-primary-400: 102 126 234;
-  --color-primary-500: 102 126 234;
-  --color-primary-600: 118 75 162;
-  --color-primary-700: 91 33 182;
-  --color-primary-800: 76 29 149;
-  --color-primary-900: 59 7 100;
+  --color-primary-50: 245 247 252;
+  --color-primary-100: 218 226 255;
+  --color-primary-200: 186 198 236;
+  --color-primary-300: 152 164 201;
+  --color-primary-400: 80 95 124;
+  --color-primary-500: 46 58 89;
+  --color-primary-600: 24 36 66;
+  --color-primary-700: 13 26 56;
+  --color-primary-800: 11 27 53;
+  --color-primary-900: 8 18 36;
 }
 
 /* 紫色主题 - Purple Dream */
 :root[data-color-scheme="purple"],
 body[data-color-scheme="purple"] {
-  --color-primary-50: 250 245 255;
-  --color-primary-100: 243 232 255;
-  --color-primary-200: 233 213 255;
-  --color-primary-300: 216 180 254;
-  --color-primary-400: 192 132 252;
-  --color-primary-500: 168 85 247;
-  --color-primary-600: 147 51 234;
-  --color-primary-700: 126 34 206;
-  --color-primary-800: 107 33 168;
-  --color-primary-900: 88 28 135;
+  --color-primary-50: 245 247 252;
+  --color-primary-100: 218 226 255;
+  --color-primary-200: 186 198 236;
+  --color-primary-300: 152 164 201;
+  --color-primary-400: 80 95 124;
+  --color-primary-500: 46 58 89;
+  --color-primary-600: 24 36 66;
+  --color-primary-700: 13 26 56;
+  --color-primary-800: 11 27 53;
+  --color-primary-900: 8 18 36;
 }
 
 /* 蓝色主题 - Ocean Blue */
@@ -172,8 +172,8 @@ body[data-color-scheme="teal"] {
 /* ==================== 语义化 CSS 变量系统 (对标 Next.js) ==================== */
 :root {
   /* 基础色 - 亮色模式 - 使用OKLCH色彩空间获得更好的感知均匀性 */
-  --background: 249 250 251;           /* rgb(249 250 251) - 柔和的灰白背景 */
-  --foreground: 17 24 39;              /* rgb(17 24 39) - 深灰色文本 */
+  --background: 251 248 252;           /* #fbf8fc - editorial surface */
+  --foreground: 27 27 30;              /* #1b1b1e - editorial ink */
 
   /* 卡片 */
   --card: 255 255 255;                 /* rgb(255 255 255) - 纯白卡片 */
@@ -184,21 +184,21 @@ body[data-color-scheme="teal"] {
   --popover-foreground: 17 24 39;      /* rgb(17 24 39) */
 
   /* 边框和输入 */
-  --border: 229 231 235;               /* rgb(229 231 235) - 边框色 */
-  --input: 229 231 235;                /* rgb(229 231 235) - 输入框边框 */
+  --border: 198 198 206;               /* #c6c6ce - outline variant */
+  --input: 228 226 229;                /* #e4e2e5 - input surface */
   --ring: var(--color-primary-500);   /* 使用主题色作为聚焦环 */
 
   /* 静音色 */
-  --muted: 243 244 246;                /* rgb(243 244 246) - 静音背景 */
-  --muted-foreground: 107 114 128;     /* rgb(107 114 128) - 静音文本 */
+  --muted: 240 237 240;                /* #f0edf0 - surface container */
+  --muted-foreground: 69 70 78;        /* #45464e - on surface variant */
 
   /* 主色 - 使用现有的 primary 变量 */
   --primary: var(--color-primary-500);
   --primary-foreground: 255 255 255;   /* rgb(255 255 255) - 主色上的白色文本 */
 
   /* 次要色 */
-  --secondary: 243 244 246;            /* rgb(243 244 246) - 次要背景 */
-  --secondary-foreground: 31 41 55;    /* rgb(31 41 55) - 次要文本 */
+  --secondary: 245 243 246;            /* #f5f3f6 - surface container low */
+  --secondary-foreground: 69 70 78;    /* #45464e - secondary text */
 
   /* 强调色 */
   --accent: var(--color-primary-400);
@@ -212,9 +212,9 @@ body[data-color-scheme="teal"] {
   --radius: 0.5rem;                    /* 8px - 基准圆角 */
 
   /* 阴影系统 - 使用更柔和的阴影 */
-  --shadow-card: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
-  --shadow-card-hover: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
-  --shadow-elevated: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+  --shadow-card: 0 4px 20px rgb(46 58 89 / 0.05);
+  --shadow-card-hover: 0 8px 30px rgb(46 58 89 / 0.08);
+  --shadow-elevated: 0 20px 45px rgb(46 58 89 / 0.12);
 }
 
 /* 深色模式变量 */
@@ -270,30 +270,28 @@ body[data-color-scheme="teal"] {
 
   /* Body基础样式 - 现代化柔和配色 */
   body {
-    /* 亮色模式：柔和的灰白背景(#f9fafb)，避免纯白刺眼 */
-    @apply bg-gray-50;
+    @apply bg-background;
     /* 暗色模式：深Slate背景(#0f172a)，比纯黑更现代 */
     @apply dark:bg-slate-900;
     /* 文本色：深灰色而非纯黑，更柔和 */
-    @apply text-gray-800;
+    @apply text-foreground;
     /* 暗色模式文本：柔和的灰白色(#e2e8f0) */
     @apply dark:text-slate-100;
-    @apply font-sans;
+    @apply font-ui;
     line-height: 1.75; /* 舒适的阅读行高 */
     font-size: 1rem; /* 16px基准字体 */
   }
 
   /* 链接样式 */
   a {
-    @apply text-primary-500 hover:text-primary-600 transition-colors duration-200;
-    @apply dark:text-primary-400 dark:hover:text-primary-300;
+    @apply text-primary-600 hover:text-primary-500 transition-colors duration-200;
+    @apply dark:text-primary-300 dark:hover:text-primary-200;
   }
 
   /* 标题样式 - 清晰的视觉层次，现代化柔和配色 */
   h1, h2, h3, h4, h5, h6 {
-    @apply font-bold;
-    /* 亮色模式：深灰色(#1f2937)而非纯黑，更柔和现代 */
-    @apply text-gray-800;
+    @apply font-headline font-bold;
+    @apply text-foreground;
     /* 暗色模式：亮灰白色(#f1f5f9)，高对比但不刺眼 */
     @apply dark:text-slate-100;
     line-height: 1.25; /* 紧凑的标题行高 */
@@ -611,6 +609,126 @@ body[data-color-scheme="teal"] {
 
   .shadow-elevated {
     box-shadow: var(--shadow-elevated);
+  }
+
+  /* ========== Editorial redesign components ========== */
+  .editorial-shell {
+    min-height: calc(100vh - 4rem);
+  }
+
+  .editorial-nav-link {
+    @apply relative pb-1 text-[13px] font-semibold leading-none text-muted-foreground transition-colors hover:text-primary-600;
+  }
+
+  .editorial-nav-link.is-active {
+    @apply text-primary-600;
+  }
+
+  .editorial-nav-link.is-active::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -0.35rem;
+    height: 2px;
+    border-radius: 9999px;
+    background: rgb(var(--primary));
+  }
+
+  .editorial-mobile-link {
+    @apply block rounded-lg px-3 py-2.5 text-sm font-semibold text-foreground transition-colors hover:bg-secondary hover:text-primary-600;
+  }
+
+  .editorial-footer-link {
+    @apply text-xs font-medium text-muted-foreground transition-colors hover:text-primary-600;
+  }
+
+  .editorial-chip {
+    @apply inline-flex items-center rounded px-2.5 py-1 text-[13px] font-semibold text-primary-600 transition-colors hover:bg-primary-600/10 hover:text-primary-600;
+    background-color: rgb(var(--primary) / 0.06);
+  }
+
+  .editorial-tag {
+    @apply inline-flex items-center rounded px-2.5 py-1 text-[13px] font-medium text-muted-foreground transition-colors hover:bg-primary-600/10 hover:text-primary-600;
+    background-color: rgb(var(--muted));
+  }
+
+  .editorial-side-card {
+    @apply rounded-lg border border-border/40 bg-card p-6 shadow-card;
+  }
+
+  .editorial-side-title {
+    @apply mb-5 flex items-center gap-2 font-headline text-lg font-semibold leading-tight text-primary-600;
+  }
+
+  .editorial-side-link {
+    @apply block rounded-lg px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-secondary hover:text-primary-600;
+  }
+
+  .editorial-page-button {
+    @apply inline-flex size-10 items-center justify-center rounded-lg border border-border/40 bg-card text-sm font-semibold text-foreground shadow-card transition-colors hover:bg-secondary hover:text-primary-600;
+  }
+
+  .editorial-page-button.is-current {
+    @apply border-primary-600 bg-primary-600 text-white hover:bg-primary-600 hover:text-white;
+  }
+
+  .editorial-page-button.is-disabled {
+    @apply cursor-not-allowed text-muted-foreground/40 hover:bg-card hover:text-muted-foreground/40;
+  }
+
+  .editorial-excerpt :where(p, div) {
+    margin: 0;
+  }
+
+  .editorial-breadcrumb ol {
+    @apply mb-6 text-[13px] font-medium;
+  }
+
+  .editorial-detail-card,
+  .editorial-article-card,
+  .editorial-side-card {
+    box-shadow: var(--shadow-card);
+  }
+
+  .editorial-detail-card:hover,
+  .editorial-article-card:hover {
+    box-shadow: var(--shadow-card-hover);
+  }
+
+  .editorial-article-body {
+    font-family: 'Source Serif 4', Georgia, serif;
+    font-size: 18px;
+    line-height: 1.75;
+    color: rgb(var(--foreground));
+  }
+
+  .editorial-article-body p {
+    margin-bottom: 1.5rem;
+  }
+
+  .editorial-article-body blockquote {
+    @apply my-6 rounded-none border-l-4 border-primary-600 bg-secondary p-4 text-muted-foreground;
+  }
+
+  .editorial-post-link {
+    @apply rounded-lg border border-border/40 p-4 transition-all hover:border-primary-600/30 hover:shadow-card;
+  }
+
+  [data-theme="dark"] .text-primary-600,
+  [data-theme="dark"] .editorial-nav-link.is-active,
+  [data-theme="dark"] .editorial-side-title,
+  [data-theme="dark"] .editorial-chip,
+  [data-theme="dark"] .editorial-post-link span:last-child {
+    color: rgb(var(--color-primary-200));
+  }
+
+  [data-theme="dark"] .text-primary-500,
+  [data-theme="dark"] .hover\:text-primary-500:hover,
+  [data-theme="dark"] .hover\:text-primary-600:hover,
+  [data-theme="dark"] .group:hover .group-hover\:text-primary-500,
+  [data-theme="dark"] .group:hover .group-hover\:text-primary-600 {
+    color: rgb(var(--color-primary-100));
   }
 
   /* ========== 站点布局 ========== */
@@ -1589,6 +1707,10 @@ body[data-color-scheme="teal"] {
   }
   .reading-time-estimate em {
     font-style: normal;
+  }
+
+  .editorial-article-body .reading-time-estimate {
+    display: none;
   }
 
   /* 文章目录（覆盖全局 a { text-primary-500 } 规则） */

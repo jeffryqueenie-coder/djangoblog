@@ -65,13 +65,18 @@ export default {
 
       // 字体家族
       fontFamily: {
-        sans: ['Open Sans', 'Helvetica Neue', 'Helvetica', 'Arial', 'sans-serif'],
+        sans: ['Inter', 'Helvetica Neue', 'Helvetica', 'Arial', 'sans-serif'],
+        ui: ['Inter', 'Helvetica Neue', 'Helvetica', 'Arial', 'sans-serif'],
+        headline: ['Manrope', 'Inter', 'Helvetica Neue', 'Arial', 'sans-serif'],
+        article: ['Source Serif 4', 'Georgia', 'serif'],
         mono: ['Consolas', 'Monaco', 'Courier New', 'monospace'],
       },
 
       // 容器最大宽度，与现有布局一致
       maxWidth: {
         'site': '1040px',
+        'container-max': '1200px',
+        'article-max': '720px',
       },
 
       // 动画

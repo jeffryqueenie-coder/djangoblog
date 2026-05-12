@@ -55,6 +55,28 @@ class AccountTest(TestCase):
         response = self.client.get(article.get_admin_url())
         self.assertEqual(response.status_code, 200)
 
+    def test_login_form_csrf_round_trip(self):
+        client = Client(enforce_csrf_checks=True, HTTP_HOST="127.0.0.1:8000")
+        response = client.get(reverse("account:login"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "csrfmiddlewaretoken")
+        self.assertIn("csrftoken", client.cookies)
+
+        post_response = client.post(
+            reverse("account:login"),
+            {
+                "username": "test",
+                "password": "12345678",
+                "csrfmiddlewaretoken": response.context["csrf_token"],
+            },
+            HTTP_REFERER="http://127.0.0.1:8000/login/",
+            HTTP_ORIGIN="http://127.0.0.1:8000",
+            HTTP_HOST="127.0.0.1:8000",
+        )
+
+        self.assertEqual(post_response.status_code, 302)
+
     def test_validate_register(self):
         self.assertEquals(
             0, len(
@@ -204,4 +226,3 @@ class AccountTest(TestCase):
         )
 
         self.assertEqual(resp.status_code, 200)
-

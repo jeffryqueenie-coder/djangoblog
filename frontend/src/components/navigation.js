@@ -76,13 +76,7 @@ export default () => ({
 
   // ==================== 主题切换（与dark_mode插件配合） ====================
   toggleTheme() {
-    const html = document.documentElement;
-    const currentTheme = html.getAttribute('data-theme');
-    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-
-    html.setAttribute('data-theme', newTheme);
-    localStorage.setItem('theme', newTheme);
-
-    console.log('🌓 Theme switched to:', newTheme);
+    const newTheme = window.DarkMode?.toggle?.();
+    console.log('🌓 Theme switched to:', newTheme || 'unknown');
   },
 });

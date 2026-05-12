@@ -1,51 +1,37 @@
 {% if page_obj.paginator.num_pages > 1 %}
-<nav class="flex items-center justify-center gap-1 mt-8 pt-6 border-t border-border" role="navigation" aria-label="分页导航">
-    {# Previous #}
+<nav class="mt-10 flex items-center justify-center gap-2 pt-2" role="navigation" aria-label="分页导航">
     {% if page_obj.has_previous and previous_url %}
-        <a href="{{ previous_url }}"
-           class="inline-flex size-9 items-center justify-center rounded-lg border border-border bg-card text-sm text-foreground transition-colors hover:bg-secondary"
-           rel="prev"
-           aria-label="上一页">
+        <a href="{{ previous_url }}" class="editorial-page-button" rel="prev" aria-label="上一页">
             <svg class="size-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
             </svg>
         </a>
     {% else %}
-        <span class="inline-flex size-9 items-center justify-center rounded-lg border border-border bg-card text-sm text-muted-foreground/40 cursor-not-allowed">
+        <span class="editorial-page-button is-disabled">
             <svg class="size-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
             </svg>
         </span>
     {% endif %}
 
-    {# Page numbers #}
     {% for item in page_range %}
         {% if item.type == 'ellipsis' %}
-            <span class="inline-flex size-9 items-center justify-center text-sm text-muted-foreground">...</span>
+            <span class="inline-flex size-10 items-center justify-center text-sm text-muted-foreground">...</span>
         {% elif item.is_current %}
-            <span class="inline-flex size-9 items-center justify-center rounded-lg bg-primary text-sm font-medium text-primary-foreground shadow-sm" aria-current="page">
-                {{ item.number }}
-            </span>
+            <span class="editorial-page-button is-current" aria-current="page">{{ item.number }}</span>
         {% else %}
-            <a href="{{ item.url }}"
-               class="inline-flex size-9 items-center justify-center rounded-lg border border-border bg-card text-sm text-foreground transition-colors hover:bg-secondary">
-                {{ item.number }}
-            </a>
+            <a href="{{ item.url }}" class="editorial-page-button">{{ item.number }}</a>
         {% endif %}
     {% endfor %}
 
-    {# Next #}
     {% if page_obj.has_next and next_url %}
-        <a href="{{ next_url }}"
-           class="inline-flex size-9 items-center justify-center rounded-lg border border-border bg-card text-sm text-foreground transition-colors hover:bg-secondary"
-           rel="next"
-           aria-label="下一页">
+        <a href="{{ next_url }}" class="editorial-page-button" rel="next" aria-label="下一页">
             <svg class="size-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
             </svg>
         </a>
     {% else %}
-        <span class="inline-flex size-9 items-center justify-center rounded-lg border border-border bg-card text-sm text-muted-foreground/40 cursor-not-allowed">
+        <span class="editorial-page-button is-disabled">
             <svg class="size-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
             </svg>

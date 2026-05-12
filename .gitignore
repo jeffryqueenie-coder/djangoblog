@@ -50,6 +50,10 @@ coverage.xml
 # Django stuff:
 *.log
 logs/
+db.sqlite3
+djangoblog/local_settings.py
+requirements-local.txt
+frontend/pnpm-lock.yaml
 
 # Sphinx documentation
 docs/_build/

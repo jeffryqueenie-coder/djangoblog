@@ -15,31 +15,41 @@
     <!-- 防闪烁脚本：必须在CSS加载前立即执行 -->
     <script>
         (function() {
-            const STORAGE_KEY = 'dark-mode-enabled';
+            const LEGACY_STORAGE_KEY = 'dark-mode-enabled';
+            const STORAGE_KEY = 'djangoblog-theme';
             const THEME_ATTR = 'data-theme';
-            const ENABLE_SYSTEM = true;
 
             function getPreferredTheme() {
                 const saved = localStorage.getItem(STORAGE_KEY);
                 if (saved !== null) return saved === 'dark' ? 'dark' : 'light';
-                if (ENABLE_SYSTEM && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-                    return 'dark';
-                }
+                localStorage.removeItem(LEGACY_STORAGE_KEY);
                 return 'light';
             }
 
             function applyTheme(theme) {
                 if (theme === 'dark') {
                     document.documentElement.setAttribute(THEME_ATTR, 'dark');
+                    document.body && document.body.setAttribute(THEME_ATTR, 'dark');
                     document.documentElement.classList.add('dark');
                 } else {
                     document.documentElement.removeAttribute(THEME_ATTR);
+                    document.body && document.body.removeAttribute(THEME_ATTR);
                     document.documentElement.classList.remove('dark');
                 }
             }
 
             applyTheme(getPreferredTheme());
             window.__THEME__ = getPreferredTheme();
+
+            window.themeManager = {
+                toggle: function() {
+                    var current = document.documentElement.getAttribute(THEME_ATTR) === 'dark' ? 'dark' : 'light';
+                    var next = current === 'dark' ? 'light' : 'dark';
+                    applyTheme(next);
+                    localStorage.setItem(STORAGE_KEY, next);
+                    window.__THEME__ = next;
+                }
+            };
         })();
     </script>
 

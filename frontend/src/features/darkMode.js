@@ -3,9 +3,9 @@
  * 实现主题切换、持久化存储和系统主题跟随
  */
 
-const STORAGE_KEY = 'dark-mode-enabled';
+const LEGACY_STORAGE_KEY = 'dark-mode-enabled';
+const STORAGE_KEY = 'djangoblog-theme';
 const THEME_ATTR = 'data-theme';
-const ENABLE_SYSTEM = true;
 
 /**
  * 获取首选主题
@@ -17,12 +17,8 @@ function getPreferredTheme() {
         return saved === 'dark' ? 'dark' : 'light';
     }
 
-    // 2. 如果启用系统偏好跟随，检测系统设置
-    if (ENABLE_SYSTEM && window.matchMedia) {
-        if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
-            return 'dark';
-        }
-    }
+    // 2. 清理旧版本自动跟随系统色的存储键，避免首次打开变成黑底
+    localStorage.removeItem(LEGACY_STORAGE_KEY);
 
     // 3. 默认主题
     return 'light';
@@ -103,22 +99,9 @@ function setupKeyboardShortcut() {
  * 监听系统主题变化
  */
 function setupSystemThemeListener() {
-    if (!ENABLE_SYSTEM || !window.matchMedia) return;
-
-    const darkModeQuery = window.matchMedia('(prefers-color-scheme: dark)');
-
-    const listener = function(e) {
-        // 只有在用户未手动设置时才跟随系统
-        if (localStorage.getItem(STORAGE_KEY) === null) {
-            setTheme(e.matches ? 'dark' : 'light');
-        }
-    };
-
-    if (darkModeQuery.addEventListener) {
-        darkModeQuery.addEventListener('change', listener);
-    } else if (darkModeQuery.addListener) {
-        darkModeQuery.addListener(listener);
-    }
+    // The editorial theme defaults to light. System dark preference is not
+    // followed automatically because this site contains legacy templates and
+    // plugin content that are not all dark-mode safe.
 }
 
 /**

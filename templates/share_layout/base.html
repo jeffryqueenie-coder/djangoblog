@@ -11,7 +11,7 @@
     <meta charset="UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <meta name="format-detection" content="telephone=no"/>
-    <meta name="theme-color" content="#a855f7" media="(prefers-color-scheme: light)"/>
+    <meta name="theme-color" content="#fbf8fc" media="(prefers-color-scheme: light)"/>
     <meta name="theme-color" content="#0f172a" media="(prefers-color-scheme: dark)"/>
     <meta name="robots" content="index, follow"/>
     {% head_meta %}
@@ -23,16 +23,14 @@
     <!-- 防闪烁脚本：必须在CSS加载前立即执行 -->
     <script>
         (function() {
-            const STORAGE_KEY = 'dark-mode-enabled';
+            const LEGACY_STORAGE_KEY = 'dark-mode-enabled';
+            const STORAGE_KEY = 'djangoblog-theme';
             const THEME_ATTR = 'data-theme';
-            const ENABLE_SYSTEM = true;
 
             function getPreferredTheme() {
                 const saved = localStorage.getItem(STORAGE_KEY);
                 if (saved !== null) return saved === 'dark' ? 'dark' : 'light';
-                if (ENABLE_SYSTEM && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-                    return 'dark';
-                }
+                localStorage.removeItem(LEGACY_STORAGE_KEY);
                 return 'light';
             }
 
@@ -40,9 +38,11 @@
                 const isDark = theme === 'dark';
                 if (isDark) {
                     document.documentElement.setAttribute(THEME_ATTR, 'dark');
+                    document.body && document.body.setAttribute(THEME_ATTR, 'dark');
                     document.documentElement.classList.add('dark');
                 } else {
                     document.documentElement.removeAttribute(THEME_ATTR);
+                    document.body && document.body.removeAttribute(THEME_ATTR);
                     document.documentElement.classList.remove('dark');
                 }
             }
@@ -81,8 +81,8 @@
     <style>
         :root {
             /* bootstrap token：与 main.css 的 --background/--foreground 保持同值 */
-            --bootstrap-bg-light: 249 250 251;
-            --bootstrap-fg-light: 17 24 39;
+            --bootstrap-bg-light: 251 248 252;
+            --bootstrap-fg-light: 27 27 30;
             --bootstrap-bg-dark: 15 23 42;
             --bootstrap-fg-dark: 226 232 240;
             --bootstrap-skeleton-base: 243 244 246;
@@ -104,7 +104,7 @@
         body {
             margin: 0;
             padding: 0;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
             line-height: 1.6;
         }
 
@@ -142,9 +142,10 @@
         }
     </style>
 
-    <!-- 字体优化加载：使用媒体查询延迟非关键字体 -->
-    <link rel="stylesheet" href="{% static 'blog/fonts/open-sans.css' %}" media="print" onload="this.media='all'; this.onload=null;">
-    <noscript><link rel="stylesheet" href="{% static 'blog/fonts/open-sans.css' %}"></noscript>
+    <!-- Editorial typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@600;700;800&family=Source+Serif+4:opsz,wght@8..60,400;500;600&display=swap">
 
     <!-- 代码高亮样式（Pygments） - 异步加载，仅在有代码块时需要 -->
     <link rel="stylesheet" href="{% static 'pygments/default.css' %}" media="print" onload="this.media='all'; this.onload=null;">
