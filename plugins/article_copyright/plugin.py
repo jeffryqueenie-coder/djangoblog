@@ -15,21 +15,7 @@ class ArticleCopyrightPlugin(BasePlugin):
         hooks.register(ARTICLE_CONTENT_HOOK_NAME, self.add_copyright_to_content)
 
     def add_copyright_to_content(self, content, *args, **kwargs):
-        """
-        这个方法会被注册到 'the_content' 过滤器钩子上。
-        它接收原始内容，并返回添加了版权信息的新内容。
-        """
-        article = kwargs.get('article')
-        if not article:
-            return content
-        
-        # 如果是摘要模式（首页），不添加版权声明
-        is_summary = kwargs.get('is_summary', False)
-        if is_summary:
-            return content
-
-        copyright_info = f"\n<hr><p>本文由 {article.author.username} 原创，转载请注明出处。</p>"
-        return content + copyright_info
+        return content
 
 
 # 3. 实例化插件。

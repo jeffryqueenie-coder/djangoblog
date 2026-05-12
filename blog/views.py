@@ -15,7 +15,7 @@ from django.views.generic.detail import DetailView
 from django.views.generic.list import ListView
 from haystack.views import SearchView
 
-from blog.models import Article, Category, LinkShowType, Links, Tag
+from blog.models import Article, Category, LinkShowType, Links, NewsItem, Tag
 from comments.forms import CommentForm
 from djangoblog.plugin_manage import hooks
 from djangoblog.plugin_manage.hook_constants import ARTICLE_CONTENT_HOOK_NAME
@@ -84,6 +84,50 @@ class IndexView(OptimizedArticleQueryMixin, ArticleListView):
         context['seo_description'] = blog_setting.site_seo_description
         context['seo_keywords'] = blog_setting.site_keywords
         return context
+
+
+class NewsListView(ListView):
+    """新闻列表页面。"""
+
+    template_name = 'blog/news_list.html'
+    context_object_name = 'news_list'
+    paginate_by = 20
+
+    def get_queryset(self):
+        return NewsItem.objects.filter(is_visible=True)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        blog_setting = get_blog_setting()
+        context['seo_title'] = f"新闻 | {blog_setting.site_name}"
+        context['seo_description'] = "AI 与技术新闻聚合。"
+        context['seo_keywords'] = f"技术新闻,AI新闻,{blog_setting.site_keywords}"
+        context['linktype'] = LinkShowType.L
+        return context
+
+
+def title_search_view(request):
+    query = (request.GET.get('q') or '').strip()
+    article_results = Article.objects.none()
+    news_results = NewsItem.objects.none()
+
+    if query:
+        article_results = Article.objects.filter(
+            title__icontains=query,
+            type='a',
+            status='p',
+        ).select_related('category', 'author').prefetch_related('tags')[:30]
+        news_results = NewsItem.objects.filter(
+            title__icontains=query,
+            is_visible=True,
+        )[:30]
+
+    return render(request, 'search/search.html', {
+        'query': query,
+        'article_results': article_results,
+        'news_results': news_results,
+        'result_count': len(article_results) + len(news_results),
+    })
 
 
 class ArticleDetailView(DetailView):

@@ -153,15 +153,6 @@
         {# Footer links #}
         <div class="border-t border-border px-8 py-4">
             <div class="flex flex-wrap items-center justify-center gap-4 text-sm text-muted-foreground">
-                <a href="{% url 'account:register' %}"
-                   hx-get="{% url 'account:register' %}"
-                   hx-target="body"
-                   hx-swap="outerHTML"
-                   hx-push-url="true"
-                   class="transition-colors hover:text-foreground">
-                    {% trans 'Create Account' %}
-                </a>
-                <span class="text-border">&middot;</span>
                 <a href="/"
                    class="transition-colors hover:text-foreground">
                     {% trans 'Home Page' %}

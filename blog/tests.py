@@ -11,7 +11,8 @@ from django.utils import timezone
 
 from accounts.models import BlogUser
 from blog.forms import BlogSearchForm
-from blog.models import Article, Category, Tag, SideBar, Links
+from blog.models import Article, Category, Tag, SideBar, Links, NewsItem
+from blog.services.collectors import parse_aihot_items
 from blog.templatetags.blog_tags import load_pagination_info, load_articletags, highlight_search_term, highlight_content
 from djangoblog.utils import get_current_site, get_sha256
 from oauth.models import OAuthUser, OAuthConfig
@@ -63,6 +64,8 @@ class ArticleTest(TestCase):
         article.status = 'p'
 
         article.save()
+        self.assertGreaterEqual(article.views, 10)
+        self.assertLessEqual(article.views, 30)
         self.assertEqual(0, article.tags.count())
         article.tags.add(tag)
         article.save()
@@ -277,6 +280,80 @@ class EditorialRedesignTemplateTest(TestCase):
         self.assertContains(response, "editorial-detail-card")
         self.assertContains(response, "editorial-article-body")
         self.assertContains(response, "editorial-post-nav")
+
+    def test_navigation_hides_archive_and_shows_news(self):
+        response = self.client.get(reverse("blog:index"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, reverse("blog:news"))
+        self.assertContains(response, "新闻")
+        self.assertNotContains(response, "归档")
+
+
+class NewsFeatureTest(TestCase):
+    def test_news_page_lists_visible_news(self):
+        NewsItem.objects.create(
+            title="AI 框架发布新版本",
+            summary="新版本改进了推理性能。",
+            reason="适合关注 AI 服务部署。",
+            source_name="AI HOT",
+            source_url="https://example.com/news/1",
+            tags="AI,框架",
+            is_visible=True,
+        )
+        NewsItem.objects.create(
+            title="隐藏新闻",
+            source_url="https://example.com/news/2",
+            is_visible=False,
+        )
+
+        response = self.client.get(reverse("blog:news"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "AI 框架发布新版本")
+        self.assertContains(response, "适合关注 AI 服务部署。")
+        self.assertNotContains(response, "隐藏新闻")
+
+    def test_parse_aihot_items_extracts_linked_cards(self):
+        html = """
+        <article>
+            <a href="/item/1">LangGraph 发布更新</a>
+            <span class="tag">AI</span>
+            <p>面向 agent 服务编排。</p>
+        </article>
+        """
+
+        items = parse_aihot_items(html, base_url="https://aihot.virxact.com/")
+
+        self.assertEqual(len(items), 1)
+        self.assertEqual(items[0]["title"], "LangGraph 发布更新")
+        self.assertEqual(items[0]["source_url"], "https://aihot.virxact.com/item/1")
+        self.assertIn("AI", items[0]["tags"])
+
+    def test_title_search_returns_articles_and_news(self):
+        user = BlogUser.objects.create_user(username="searcher", email="searcher@example.com")
+        category = Category.objects.create(name="文章")
+        Article.objects.create(
+            title="Python 性能调优实践",
+            body="content",
+            author=user,
+            category=category,
+            type="a",
+            status="p",
+        )
+        NewsItem.objects.create(
+            title="Python 3.14 发布",
+            source_url="https://example.com/python-news",
+            source_url_hash="python-news",
+            is_visible=True,
+        )
+
+        response = self.client.get("/search", {"q": "Python"})
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "<mark>Python</mark>", html=False)
+        self.assertContains(response, "性能调优实践")
+        self.assertContains(response, "3.14 发布")
 
 
 class SearchHighlightTest(TestCase):

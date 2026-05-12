@@ -1,5 +1,6 @@
 from django.urls import path
 from django.urls import re_path
+from django.views.generic import TemplateView
 
 from . import views
 from .forms import LoginForm
@@ -11,7 +12,7 @@ urlpatterns = [re_path(r'^login/$',
                        name='login',
                        kwargs={'authentication_form': LoginForm}),
                re_path(r'^register/$',
-                       views.RegisterView.as_view(success_url="/"),
+                       TemplateView.as_view(template_name='account/registration_closed.html'),
                        name='register'),
                re_path(r'^logout/$',
                        views.LogoutView.as_view(),

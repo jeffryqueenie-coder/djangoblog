@@ -1,7 +1,7 @@
 {% load blog_tags %}
 {% load i18n %}
 
-<article id="post-{{ article.pk }}" class="editorial-article-card group rounded-lg border border-border/40 bg-card p-6 shadow-card transition-all duration-300 hover:border-primary-600/10 hover:shadow-card-hover">
+<article id="post-{{ article.pk }}" class="editorial-article-card group p-6 transition-colors duration-300 hover:bg-secondary/30">
     <div class="flex flex-col gap-3">
         <div class="flex flex-wrap items-center gap-3">
             <a href="{{ article.category.get_absolute_url }}" class="editorial-chip">
@@ -34,8 +34,8 @@
         </h2>
 
         {% if isindex %}
-            <div class="editorial-excerpt line-clamp-2 font-article text-[17px] leading-8 text-muted-foreground">
-                {% render_article_content article True %}
+            <div class="editorial-excerpt line-clamp-3 text-[15px] leading-7 text-muted-foreground md:text-[16px]">
+                {% article_summary_text article %}
             </div>
         {% endif %}
 

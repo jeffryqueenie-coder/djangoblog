@@ -9,9 +9,9 @@
 {% endblock %}
 
 {% block content %}
-    <div class="editorial-shell mx-auto grid max-w-container-max grid-cols-1 gap-6 px-4 pb-20 pt-24 md:px-8 lg:grid-cols-12 lg:gap-8">
-        <main class="min-w-0 lg:col-span-8">
-            <div class="mb-6 flex items-end justify-between gap-4">
+    <div class="editorial-shell mx-auto grid max-w-container-max grid-cols-1 gap-6 px-4 pb-20 pt-24 md:px-8">
+        <main class="min-w-0">
+            <div class="editorial-section-heading mb-7 flex items-end justify-between gap-4">
                 <div>
                     {% if page_type == "分类目录归档" %}
                         <p class="mb-2 text-[13px] font-medium text-muted-foreground">分类</p>
@@ -29,7 +29,7 @@
                 </div>
             </div>
 
-            <div class="space-y-6">
+            <div class="editorial-feed-list">
                 {% for article in article_list %}
                     {% load_article_detail article True user %}
                 {% empty %}
@@ -44,10 +44,5 @@
             {% endif %}
         </main>
 
-        <aside class="editorial-sidebar lg:col-span-4">
-            <div class="space-y-6 lg:sticky lg:top-24">
-                {% load_sidebar user "p" %}
-            </div>
-        </aside>
     </div>
 {% endblock %}

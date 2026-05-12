@@ -6,7 +6,7 @@ from django.utils.html import format_html
 from django.utils.translation import gettext_lazy as _
 
 # Register your models here.
-from .models import Article, Category, Tag, Links, SideBar, BlogSettings
+from .models import Article, Category, Tag, Links, NewsItem, SideBar, BlogSettings
 
 
 class ArticleForm(forms.ModelForm):
@@ -103,6 +103,13 @@ class CategoryAdmin(admin.ModelAdmin):
 
 class LinksAdmin(admin.ModelAdmin):
     exclude = ('last_mod_time', 'creation_time')
+
+
+class NewsItemAdmin(admin.ModelAdmin):
+    list_display = ('title', 'source', 'source_name', 'published_at', 'fetched_at', 'is_visible')
+    list_filter = ('source', 'is_visible', 'published_at')
+    search_fields = ('title', 'summary', 'reason', 'source_name', 'source_url', 'tags')
+    readonly_fields = ('fetched_at',)
 
 
 class SideBarAdmin(admin.ModelAdmin):

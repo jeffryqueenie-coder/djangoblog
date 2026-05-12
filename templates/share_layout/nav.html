@@ -21,21 +21,19 @@
             </a>
 
             <nav class="hidden items-center gap-6 lg:flex"
-                 aria-label="{% trans 'Primary' %}"
-                 hx-boost="true"
-                 hx-target="#main"
-                 hx-select="#main"
-                 hx-swap="innerHTML"
-                 hx-push-url="true">
+                 aria-label="{% trans 'Primary' %}">
                 {% current_nav_item request as nav_active %}
+                {% with current_url=request.resolver_match.url_name %}
                 <a href="{% url 'blog:index' %}"
-                   class="editorial-nav-link {% if nav_active == 'index' %}is-active{% endif %}"
-                   {% if nav_active == 'index' %}aria-current="page"{% endif %}>
+                   class="editorial-nav-link {% if current_url == 'index' or current_url == 'index_page' %}is-active{% endif %}"
+                   {% if current_url == 'index' or current_url == 'index_page' %}aria-current="page"{% endif %}>
                     {% trans 'index' %}
                 </a>
 
                 {% query nav_category_list parent_category__isnull=True as nav_top_cats %}
                 {% for category in nav_top_cats %}
+                    {% if category.name == "文章" %}
+                    {% else %}
                     {% query nav_category_list parent_category=category as nav_children %}
                     {% if nav_children %}
                         <div class="relative" x-data="{ open: false }" @mouseenter="open = true" @mouseleave="open = false">
@@ -74,12 +72,13 @@
                             {{ category.name }}
                         </a>
                     {% endif %}
+                    {% endif %}
                 {% endfor %}
 
-                <a href="{% url 'blog:archives' %}"
-                   class="editorial-nav-link {% if nav_active == 'archives' %}is-active{% endif %}"
-                   {% if nav_active == 'archives' %}aria-current="page"{% endif %}>
-                    归档
+                <a href="{% url 'blog:news' %}"
+                   class="editorial-nav-link {% if current_url == 'news' %}is-active{% endif %}"
+                   {% if current_url == 'news' %}aria-current="page"{% endif %}>
+                    新闻
                 </a>
                 {% for page in nav_pages %}
                     <a href="{{ page.get_absolute_url }}"
@@ -88,6 +87,7 @@
                         {{ page.title }}
                     </a>
                 {% endfor %}
+                {% endwith %}
             </nav>
         </div>
 
@@ -97,8 +97,8 @@
                 <input id="header-search-input"
                        name="q"
                        type="search"
-                       placeholder="搜索文章..."
-                       aria-label="{% trans 'Search articles' %}"
+                       placeholder="搜索文章/新闻..."
+                       aria-label="搜索文章和新闻"
                        class="min-w-0 flex-1 appearance-none border-0 bg-transparent p-0 text-[13px] text-foreground placeholder:text-muted-foreground focus:outline-none"/>
                 <svg class="size-4 shrink-0 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
@@ -115,6 +115,36 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M12 8a4 4 0 100 8 4 4 0 000-8z"/>
                 </svg>
             </button>
+
+            <div class="relative" x-data="{ open: false }" @keydown.escape.window="open = false">
+                <button class="flex size-9 items-center justify-center rounded-lg border border-border/40 bg-card text-primary-600 shadow-card transition-colors hover:bg-secondary"
+                        @mouseenter="open = true"
+                        @focus="open = true"
+                        @click="open = !open"
+                        :aria-expanded="open.toString()"
+                        aria-haspopup="true"
+                        aria-label="用户菜单">
+                    <svg class="size-[18px]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.75 7.5a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.5 20.25a8.25 8.25 0 1115 0"/>
+                    </svg>
+                </button>
+                <div x-show="open"
+                     @mouseenter="open = true"
+                     @mouseleave="open = false"
+                     x-transition
+                     class="absolute right-0 top-full z-50 mt-3 min-w-44 overflow-hidden rounded-lg border border-border/60 bg-card p-1.5 shadow-elevated"
+                     x-cloak>
+                    <a href="/admin/" rel="nofollow" hx-boost="false" class="editorial-user-menu-link">{% trans 'management site' %}</a>
+                    {% if user.is_authenticated %}
+                        <a href="{% url 'account:logout' %}" rel="nofollow" hx-boost="false" class="editorial-user-menu-link">{% trans 'logout' %}</a>
+                    {% else %}
+                        <a href="{% url 'account:login' %}" rel="nofollow" hx-boost="false" class="editorial-user-menu-link">{% trans 'login' %}</a>
+                    {% endif %}
+                    {% if user.is_superuser %}
+                        <a href="{% url 'owntracks:show_dates' %}" target="_blank" hx-boost="false" class="editorial-user-menu-link">{% trans 'Track record' %}</a>
+                    {% endif %}
+                </div>
+            </div>
 
             <button class="flex size-9 items-center justify-center rounded-lg text-primary-600 transition-colors hover:bg-secondary lg:hidden"
                     @click="$store.nav.mobileOpen = !$store.nav.mobileOpen"
@@ -136,15 +166,10 @@
          x-show="$store.nav.mobileOpen"
          x-transition
          class="border-t border-border/40 bg-background/95 px-4 py-3 backdrop-blur-md lg:hidden"
-         x-cloak
-         hx-boost="true"
-         hx-target="#main"
-         hx-select="#main"
-         hx-swap="innerHTML"
-         hx-push-url="true">
+         x-cloak>
         <div class="mx-auto flex max-w-container-max flex-col gap-1">
             <form action="{% url 'search' %}" method="get" class="mb-2 flex items-center gap-2 rounded-lg bg-secondary px-3 py-2">
-                <input name="q" type="search" placeholder="搜索文章..." aria-label="{% trans 'Search articles' %}" class="min-w-0 flex-1 appearance-none border-0 bg-transparent p-0 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none"/>
+                <input name="q" type="search" placeholder="搜索文章/新闻..." aria-label="搜索文章和新闻" class="min-w-0 flex-1 appearance-none border-0 bg-transparent p-0 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none"/>
                 <svg class="size-4 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
                 </svg>
@@ -152,6 +177,8 @@
             <a href="{% url 'blog:index' %}" @click="$store.nav.mobileOpen = false" class="editorial-mobile-link">{% trans 'index' %}</a>
             {% query nav_category_list parent_category__isnull=True as mobile_top_cats %}
             {% for category in mobile_top_cats %}
+                {% if category.name == "文章" %}
+                {% else %}
                 {% query nav_category_list parent_category=category as mobile_children %}
                 {% if mobile_children %}
                     <div x-data="{ mobileSubOpen: false }">
@@ -172,8 +199,9 @@
                 {% else %}
                     <a href="{{ category.get_absolute_url }}" @click="$store.nav.mobileOpen = false" class="editorial-mobile-link">{{ category.name }}</a>
                 {% endif %}
+                {% endif %}
             {% endfor %}
-            <a href="{% url 'blog:archives' %}" @click="$store.nav.mobileOpen = false" class="editorial-mobile-link">归档</a>
+            <a href="{% url 'blog:news' %}" @click="$store.nav.mobileOpen = false" class="editorial-mobile-link">新闻</a>
             {% for page in nav_pages %}
                 <a href="{{ page.get_absolute_url }}" @click="$store.nav.mobileOpen = false" class="editorial-mobile-link">{{ page.title }}</a>
             {% endfor %}

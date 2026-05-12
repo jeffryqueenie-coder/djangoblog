@@ -78,67 +78,25 @@ class AccountTest(TestCase):
         self.assertEqual(post_response.status_code, 302)
 
     def test_validate_register(self):
-        self.assertEquals(
-            0, len(
-                BlogUser.objects.filter(
-                    email='user123@user.com')))
-        response = self.client.post(reverse('account:register'), {
+        response = self.client.get(reverse('account:register'))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, '注册已关闭')
+
+        self.assertEqual(
+            0,
+            BlogUser.objects.filter(email='user123@user.com').count()
+        )
+        post_response = self.client.post(reverse('account:register'), {
             'username': 'user1233',
             'email': 'user123@user.com',
             'password1': 'password123!q@wE#R$T',
             'password2': 'password123!q@wE#R$T',
         })
-        self.assertEquals(
-            1, len(
-                BlogUser.objects.filter(
-                    email='user123@user.com')))
-        user = BlogUser.objects.filter(email='user123@user.com')[0]
-        sign = get_sha256(get_sha256(settings.SECRET_KEY + str(user.id)))
-        path = reverse('accounts:result')
-        url = '{path}?type=validation&id={id}&sign={sign}'.format(
-            path=path, id=user.id, sign=sign)
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, 200)
-
-        self.client.login(username='user1233', password='password123!q@wE#R$T')
-        user = BlogUser.objects.filter(email='user123@user.com')[0]
-        user.is_superuser = True
-        user.is_staff = True
-        user.save()
-        delete_sidebar_cache()
-        category = Category()
-        category.name = "categoryaaa"
-        category.creation_time = timezone.now()
-        category.last_modify_time = timezone.now()
-        category.save()
-
-        article = Article()
-        article.category = category
-        article.title = "nicetitle333"
-        article.body = "nicecontentttt"
-        article.author = user
-
-        article.type = 'a'
-        article.status = 'p'
-        article.save()
-
-        response = self.client.get(article.get_admin_url())
-        self.assertEqual(response.status_code, 200)
-
-        response = self.client.get(reverse('account:logout'))
-        self.assertIn(response.status_code, [301, 302, 200])
-
-        response = self.client.get(article.get_admin_url())
-        self.assertIn(response.status_code, [301, 302, 200])
-
-        response = self.client.post(reverse('account:login'), {
-            'username': 'user1233',
-            'password': 'password123'
-        })
-        self.assertIn(response.status_code, [301, 302, 200])
-
-        response = self.client.get(article.get_admin_url())
-        self.assertIn(response.status_code, [301, 302, 200])
+        self.assertEqual(post_response.status_code, 405)
+        self.assertEqual(
+            0,
+            BlogUser.objects.filter(email='user123@user.com').count()
+        )
 
     def test_verify_email_code(self):
         to_email = "admin@admin.com"

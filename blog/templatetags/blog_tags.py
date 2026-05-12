@@ -2,6 +2,7 @@ import hashlib
 import json
 import logging
 import random
+import re
 import urllib
 
 from django import template
@@ -11,6 +12,7 @@ from django.shortcuts import get_object_or_404
 from django.template.defaultfilters import stringfilter
 from django.templatetags.static import static
 from django.urls import reverse
+from django.utils.html import strip_tags
 from django.utils.safestring import mark_safe
 
 from blog.models import Article, Category, Tag, Links, SideBar, LinkShowType
@@ -73,6 +75,12 @@ def sidebar_markdown(content):
     return mark_safe(html_content)
 
 
+@register.filter()
+@stringfilter
+def split(value, separator=','):
+    return [item.strip() for item in value.split(separator) if item.strip()]
+
+
 @register.simple_tag(takes_context=True)
 def render_article_content(context, article, is_summary=False):
     """
@@ -127,6 +135,33 @@ def render_article_content(context, article, is_summary=False):
     return mark_safe(optimized_html)
 
 
+@register.simple_tag(takes_context=True)
+def article_summary_text(context, article):
+    """Return a compact plain-text summary for article list cards."""
+    if not article or not getattr(article, 'body', None):
+        return ''
+
+    from bs4 import BeautifulSoup
+    from django.template.defaultfilters import truncatechars
+    from djangoblog.utils import get_blog_setting
+
+    html_content = CommonMarkdown.get_markdown(article.body)
+    soup = BeautifulSoup(html_content, 'html.parser')
+    for tag in soup.find_all(['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'code', 'pre', 'script', 'style']):
+        tag.decompose()
+
+    text = strip_tags(str(soup))
+    text = re.sub(r'\s+', ' ', text).strip()
+    text = re.sub(r'[-—_ ]*原文链接[:：]\s*\S+\s*$', '', text).strip()
+    summary_length = get_blog_setting().article_sub_length
+    text = truncatechars(text, summary_length)
+
+    query = context.get('query')
+    if query:
+        return highlight_search_term(text, query)
+    return text
+
+
 @register.simple_tag
 def get_markdown_toc(content):
     from djangoblog.utils import CommonMarkdown
@@ -140,6 +175,8 @@ def current_nav_item(request):
     path = request.path
     if path == '/' or path.startswith('/page/'):
         return 'index'
+    elif path.startswith('/news'):
+        return 'news'
     elif path.startswith('/archives'):
         return 'archives'
     elif path.startswith('/links'):

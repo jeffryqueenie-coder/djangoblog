@@ -19,15 +19,13 @@ from django.conf.urls.static import static
 from django.contrib.sitemaps.views import sitemap
 from django.urls import path, include
 from django.urls import re_path
-from haystack.views import search_view_factory
 from django.http import JsonResponse
 import time
 
-from blog.views import EsSearchView
 from djangoblog.admin_site import admin_site
-from djangoblog.elasticsearch_backend import ElasticSearchModelSearchForm
 from djangoblog.feeds import DjangoBlogFeed
 from djangoblog.sitemap import ArticleSiteMap, CategorySiteMap, StaticViewSitemap, TagSiteMap, UserSiteMap
+from blog.views import title_search_view
 
 sitemaps = {
 
@@ -68,8 +66,7 @@ urlpatterns += i18n_patterns(
             name='django.contrib.sitemaps.views.sitemap'),
     re_path(r'^feed/$', DjangoBlogFeed()),
     re_path(r'^rss/$', DjangoBlogFeed()),
-    re_path('^search', search_view_factory(view_class=EsSearchView, form_class=ElasticSearchModelSearchForm),
-            name='search'),
+    re_path('^search', title_search_view, name='search'),
     re_path(r'', include('servermanager.urls', namespace='servermanager')),
     re_path(r'', include('owntracks.urls', namespace='owntracks'))
     , prefix_default_language=False) + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

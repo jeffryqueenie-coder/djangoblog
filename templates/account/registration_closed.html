@@ -1,0 +1,16 @@
+{% extends 'share_layout/base_account.html' %}
+{% load i18n %}
+
+{% block content %}
+<div class="w-full max-w-md">
+    <div class="rounded-xl border border-border bg-card p-8 text-center shadow-sm">
+        <h1 class="text-2xl font-bold tracking-tight text-foreground">注册已关闭</h1>
+        <p class="mt-3 text-sm leading-6 text-muted-foreground">
+            本站内容对访客开放阅读，后台账号仅供站长使用。
+        </p>
+        <a href="{% url 'account:login' %}" class="mt-6 inline-flex rounded-lg bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground">
+            返回登录
+        </a>
+    </div>
+</div>
+{% endblock %}

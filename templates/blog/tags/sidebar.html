@@ -106,30 +106,4 @@
         </section>
     {% endif %}
 
-    <section class="editorial-side-card">
-        <h3 class="editorial-side-title">GitHub</h3>
-        <div class="flex flex-wrap items-center gap-3">
-            <a href="https://github.com/jeffryqueenie-coder/djangoblog" rel="nofollow" class="inline-block">
-                <img src="https://img.shields.io/github/stars/jeffryqueenie-coder/djangoblog.svg?style=social&amp;label=Star" alt="GitHub stars" loading="lazy">
-            </a>
-            <a href="https://github.com/jeffryqueenie-coder/djangoblog" rel="nofollow" class="inline-block">
-                <img src="https://img.shields.io/github/forks/jeffryqueenie-coder/djangoblog.svg?style=social&amp;label=Fork" alt="GitHub forks" loading="lazy">
-            </a>
-        </div>
-    </section>
-
-    <section class="editorial-side-card">
-        <h3 class="editorial-side-title">功能</h3>
-        <ul class="m-0 flex list-none flex-col gap-1 p-0">
-            <li><a href="/admin/" rel="nofollow" hx-boost="false" class="editorial-side-link">{% trans 'management site' %}</a></li>
-            {% if user.is_authenticated %}
-                <li><a href="{% url 'account:logout' %}" rel="nofollow" hx-boost="false" class="editorial-side-link">{% trans 'logout' %}</a></li>
-            {% else %}
-                <li><a href="{% url 'account:login' %}" rel="nofollow" hx-boost="false" class="editorial-side-link">{% trans 'login' %}</a></li>
-            {% endif %}
-            {% if user.is_superuser %}
-                <li><a href="{% url 'owntracks:show_dates' %}" target="_blank" hx-boost="false" class="editorial-side-link">{% trans 'Track record' %}</a></li>
-            {% endif %}
-        </ul>
-    </section>
 </aside>

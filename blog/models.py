@@ -1,5 +1,7 @@
 import logging
 import re
+import hashlib
+import random
 from abc import abstractmethod
 
 from django.conf import settings
@@ -16,6 +18,10 @@ from djangoblog.utils import get_current_site
 from djangoblog.constants import CacheTimeout, CacheKey
 
 logger = logging.getLogger(__name__)
+
+
+def default_article_views():
+    return random.randint(10, 30)
 
 
 class LinkShowType(models.TextChoices):
@@ -88,7 +94,7 @@ class Article(BaseModel):
         choices=COMMENT_STATUS,
         default='o')
     type = models.CharField(_('type'), max_length=1, choices=TYPE, default='a')
-    views = models.PositiveIntegerField(_('views'), default=0)
+    views = models.PositiveIntegerField(_('views'), default=default_article_views)
     author = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         verbose_name=_('author'),
@@ -295,6 +301,43 @@ class Links(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class NewsItem(models.Model):
+    """抓取到的技术新闻。"""
+
+    SOURCE_CHOICES = (
+        ('aihot', 'AI HOT'),
+        ('tech', '技术站点'),
+    )
+
+    title = models.CharField('标题', max_length=300)
+    summary = models.TextField('摘要', blank=True, default='')
+    reason = models.TextField('推荐理由', blank=True, default='')
+    source = models.CharField('来源', max_length=50, choices=SOURCE_CHOICES, default='aihot')
+    source_name = models.CharField('来源名称', max_length=120, blank=True, default='')
+    source_url = models.URLField('原文链接', max_length=1000)
+    source_url_hash = models.CharField('原文链接哈希', max_length=64, unique=True, blank=True, default='')
+    tags = models.CharField('标签', max_length=300, blank=True, default='')
+    published_at = models.DateTimeField('发布时间', null=True, blank=True)
+    fetched_at = models.DateTimeField('抓取时间', default=now)
+    is_visible = models.BooleanField('是否展示', default=True)
+
+    class Meta:
+        ordering = ['-published_at', '-fetched_at']
+        verbose_name = '新闻'
+        verbose_name_plural = verbose_name
+        indexes = [
+            models.Index(fields=['source', '-published_at'], name='idx_news_source_pub'),
+            models.Index(fields=['is_visible', '-fetched_at'], name='idx_news_visible_fetch'),
+        ]
+
+    def __str__(self):
+        return self.title
+
+    def save(self, *args, **kwargs):
+        self.source_url_hash = hashlib.sha256(self.source_url.encode('utf-8')).hexdigest()
+        super().save(*args, **kwargs)
 
 
 class SideBar(models.Model):

@@ -48,6 +48,10 @@ urlpatterns = [
             views.ArchivesView.as_view()),
         name='archives'),
     path(
+        'news/',
+        views.NewsListView.as_view(),
+        name='news'),
+    path(
         'links.html',
         views.LinkListView.as_view(),
         name='links'),
