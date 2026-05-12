@@ -1,0 +1,77 @@
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        NODE_IMAGE: ${NODE_IMAGE:-node:20-alpine}
+        PYTHON_IMAGE: ${PYTHON_IMAGE:-python:3.11-slim-bookworm}
+    image: djangoblog:latest
+    container_name: djangoblog-web
+    restart: unless-stopped
+    command: >
+      sh -c "python manage.py migrate --noinput &&
+             python manage.py collectstatic --noinput &&
+             gunicorn djangoblog.wsgi:application
+             --bind 0.0.0.0:8000
+             --workers ${GUNICORN_WORKERS:-2}
+             --threads ${GUNICORN_THREADS:-4}
+             --worker-class gevent
+             --access-logfile -
+             --error-logfile -"
+    environment:
+      DJANGO_DEBUG: "False"
+      DJANGO_SETTINGS_MODULE: djangoblog.settings
+      COMPRESS_ENABLED: "False"
+      COMPRESS_OFFLINE: "False"
+      DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:-change-me-before-production}
+      DJANGO_MYSQL_DATABASE: ${DJANGO_MYSQL_DATABASE:-djangoblog}
+      DJANGO_MYSQL_USER: ${DJANGO_MYSQL_USER:-djangoblog}
+      DJANGO_MYSQL_PASSWORD: ${DJANGO_MYSQL_PASSWORD:-change-me}
+      DJANGO_MYSQL_HOST: ${DJANGO_MYSQL_HOST:-host.docker.internal}
+      DJANGO_MYSQL_PORT: ${DJANGO_MYSQL_PORT:-3306}
+      DJANGO_REDIS_URL: ${DJANGO_REDIS_URL:-}
+      OPENAI_BASE_URL: ${OPENAI_BASE_URL:-}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      BLOG_LLM_MODEL: ${BLOG_LLM_MODEL:-glm-5.1}
+      TECH_BLOG_FEEDS: ${TECH_BLOG_FEEDS:-}
+    ports:
+      - "${WEB_PORT:-8000}:8000"
+    volumes:
+      - djangoblog_static:/code/djangoblog/collectedstatic
+      - djangoblog_uploads:/code/djangoblog/uploads
+      - djangoblog_whoosh:/code/djangoblog/whoosh_index
+
+  scheduler:
+    image: djangoblog:latest
+    container_name: djangoblog-scheduler
+    restart: unless-stopped
+    command: >
+      sh -c "python manage.py migrate --noinput &&
+             python manage.py run_collectors --interval ${COLLECTOR_INTERVAL:-1800}"
+    environment:
+      DJANGO_DEBUG: "False"
+      DJANGO_SETTINGS_MODULE: djangoblog.settings
+      COMPRESS_ENABLED: "False"
+      COMPRESS_OFFLINE: "False"
+      DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:-change-me-before-production}
+      DJANGO_MYSQL_DATABASE: ${DJANGO_MYSQL_DATABASE:-djangoblog}
+      DJANGO_MYSQL_USER: ${DJANGO_MYSQL_USER:-djangoblog}
+      DJANGO_MYSQL_PASSWORD: ${DJANGO_MYSQL_PASSWORD:-change-me}
+      DJANGO_MYSQL_HOST: ${DJANGO_MYSQL_HOST:-host.docker.internal}
+      DJANGO_MYSQL_PORT: ${DJANGO_MYSQL_PORT:-3306}
+      DJANGO_REDIS_URL: ${DJANGO_REDIS_URL:-}
+      OPENAI_BASE_URL: ${OPENAI_BASE_URL:-}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      BLOG_LLM_MODEL: ${BLOG_LLM_MODEL:-glm-5.1}
+      TECH_BLOG_FEEDS: ${TECH_BLOG_FEEDS:-}
+    volumes:
+      - djangoblog_uploads:/code/djangoblog/uploads
+      - djangoblog_whoosh:/code/djangoblog/whoosh_index
+    depends_on:
+      - web
+
+volumes:
+  djangoblog_static:
+  djangoblog_uploads:
+  djangoblog_whoosh:
