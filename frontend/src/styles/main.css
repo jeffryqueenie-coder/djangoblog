@@ -697,6 +697,14 @@ body[data-color-scheme="teal"] {
     @apply cursor-not-allowed text-muted-foreground/40 hover:bg-card hover:text-muted-foreground/40;
   }
 
+  .editorial-list-shell {
+    display: block;
+  }
+
+  .editorial-list-shell > main {
+    width: 100%;
+  }
+
   .editorial-excerpt :where(p, div) {
     margin: 0;
   }

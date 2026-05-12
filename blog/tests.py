@@ -268,8 +268,10 @@ class EditorialRedesignTemplateTest(TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "editorial-shell")
+        self.assertContains(response, "editorial-list-shell")
         self.assertContains(response, "editorial-article-card")
-        self.assertContains(response, "editorial-sidebar")
+        self.assertNotContains(response, "editorial-sidebar")
+        self.assertNotContains(response, "热门文章")
         self.assertContains(response, "djangoblog-theme")
         self.assertNotContains(response, "prefers-color-scheme: dark').matches")
 
@@ -312,6 +314,11 @@ class NewsFeatureTest(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "AI 框架发布新版本")
         self.assertContains(response, "适合关注 AI 服务部署。")
+        self.assertContains(response, "editorial-list-shell")
+        self.assertContains(response, "editorial-news-summary")
+        self.assertNotContains(response, "editorial-sidebar")
+        self.assertNotContains(response, "热门文章")
+        self.assertNotContains(response, "近期文章")
         self.assertNotContains(response, "隐藏新闻")
 
     def test_parse_aihot_items_extracts_linked_cards(self):

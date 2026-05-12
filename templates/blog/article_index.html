@@ -9,7 +9,7 @@
 {% endblock %}
 
 {% block content %}
-    <div class="editorial-shell mx-auto grid max-w-container-max grid-cols-1 gap-6 px-4 pb-20 pt-24 md:px-8">
+    <div class="editorial-shell editorial-list-shell mx-auto w-full max-w-container-max px-4 pb-20 pt-24 md:px-8">
         <main class="min-w-0">
             <div class="editorial-section-heading mb-7 flex items-end justify-between gap-4">
                 <div>
@@ -43,6 +43,5 @@
                 {% load_pagination_info page_obj page_type tag_name %}
             {% endif %}
         </main>
-
     </div>
 {% endblock %}
