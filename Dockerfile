@@ -1,5 +1,5 @@
-ARG NODE_IMAGE=node:20-alpine
-ARG PYTHON_IMAGE=python:3.11-slim-bookworm
+ARG NODE_IMAGE=docker.m.daocloud.io/library/node:20-alpine
+ARG PYTHON_IMAGE=docker.m.daocloud.io/library/python:3.11-slim-bookworm
 ARG NPM_REGISTRY=https://registry.npmmirror.com/
 
 FROM ${NODE_IMAGE} AS frontend-builder
