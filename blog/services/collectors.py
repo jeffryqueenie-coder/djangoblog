@@ -186,9 +186,11 @@ def collect_tech_articles(limit=5, feeds=None, hours=None):
             if not entry['title'] or not entry['url']:
                 result.skipped += 1
                 continue
-            if cutoff and entry.get('published_at') and entry['published_at'] < cutoff:
+            published_at = entry_published_at(entry)
+            if cutoff and published_at and published_at < cutoff:
                 result.skipped += 1
                 continue
+            entry['published_at'] = published_at
             entries_by_url.setdefault(entry['url'], entry)
 
     for entry in sort_feed_entries(entries_by_url.values()):
@@ -331,10 +333,22 @@ def sort_feed_entries(entries):
 
 
 def feed_entry_timestamp(entry):
-    published_at = entry.get('published_at')
+    published_at = entry_published_at(entry)
     if not published_at:
         return 0
     return published_at.timestamp()
+
+
+def entry_published_at(entry):
+    return normalize_aware_datetime(entry.get('published_at'))
+
+
+def normalize_aware_datetime(value):
+    if value is None:
+        return None
+    if timezone.is_naive(value):
+        return timezone.make_aware(value, timezone.get_current_timezone())
+    return value
 
 
 def get_env_int(name, default):
@@ -381,9 +395,7 @@ def parse_datetime(value):
             parsed = timezone.datetime.fromisoformat(value.replace('Z', '+00:00'))
         except Exception:
             return None
-    if timezone.is_naive(parsed):
-        parsed = timezone.make_aware(parsed)
-    return parsed
+    return normalize_aware_datetime(parsed)
 
 
 def strip_html(value):

@@ -3,9 +3,11 @@ from datetime import datetime, timezone as datetime_timezone
 from unittest.mock import patch
 
 from django.test import SimpleTestCase
+from django.utils import timezone
 
 from blog.services.collectors import (
     DEFAULT_TECH_FEEDS,
+    entry_published_at,
     get_env_int,
     get_optional_env_int,
     parse_feed_entries,
@@ -71,6 +73,16 @@ class FeedCollectorParsingTest(SimpleTestCase):
         sorted_entries = sort_feed_entries(entries)
 
         self.assertEqual([entry['title'] for entry in sorted_entries], ['newer', 'older', 'missing'])
+
+    def test_entry_published_at_normalizes_naive_datetimes_for_cutoff_compare(self):
+        published_at = entry_published_at({
+            'published_at': datetime(2026, 5, 13, 10, 30, 0),
+        })
+        cutoff = datetime(2026, 5, 13, 1, 0, 0, tzinfo=datetime_timezone.utc)
+
+        self.assertIsNotNone(published_at)
+        self.assertTrue(timezone.is_aware(published_at))
+        self.assertTrue(published_at > cutoff)
 
 
 class FeedCollectorConfigTest(SimpleTestCase):
