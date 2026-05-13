@@ -116,36 +116,6 @@
                 </svg>
             </button>
 
-            <div class="relative" x-data="{ open: false }" @keydown.escape.window="open = false">
-                <button class="flex size-9 items-center justify-center rounded-lg border border-border/40 bg-card text-primary-600 shadow-card transition-colors hover:bg-secondary"
-                        @mouseenter="open = true"
-                        @focus="open = true"
-                        @click="open = !open"
-                        :aria-expanded="open.toString()"
-                        aria-haspopup="true"
-                        aria-label="用户菜单">
-                    <svg class="size-[18px]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.75 7.5a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.5 20.25a8.25 8.25 0 1115 0"/>
-                    </svg>
-                </button>
-                <div x-show="open"
-                     @mouseenter="open = true"
-                     @mouseleave="open = false"
-                     x-transition
-                     class="absolute right-0 top-full z-50 mt-3 min-w-44 overflow-hidden rounded-lg border border-border/60 bg-card p-1.5 shadow-elevated"
-                     x-cloak>
-                    <a href="/admin/" rel="nofollow" hx-boost="false" class="editorial-user-menu-link">{% trans 'management site' %}</a>
-                    {% if user.is_authenticated %}
-                        <a href="{% url 'account:logout' %}" rel="nofollow" hx-boost="false" class="editorial-user-menu-link">{% trans 'logout' %}</a>
-                    {% else %}
-                        <a href="{% url 'account:login' %}" rel="nofollow" hx-boost="false" class="editorial-user-menu-link">{% trans 'login' %}</a>
-                    {% endif %}
-                    {% if user.is_superuser %}
-                        <a href="{% url 'owntracks:show_dates' %}" target="_blank" hx-boost="false" class="editorial-user-menu-link">{% trans 'Track record' %}</a>
-                    {% endif %}
-                </div>
-            </div>
-
             <button class="flex size-9 items-center justify-center rounded-lg text-primary-600 transition-colors hover:bg-secondary lg:hidden"
                     @click="$store.nav.mobileOpen = !$store.nav.mobileOpen"
                     :aria-expanded="$store.nav.mobileOpen.toString()"

@@ -22,7 +22,6 @@ from django.urls import re_path
 from django.http import JsonResponse
 import time
 
-from djangoblog.admin_site import admin_site
 from djangoblog.feeds import DjangoBlogFeed
 from djangoblog.sitemap import ArticleSiteMap, CategorySiteMap, StaticViewSitemap, TagSiteMap, UserSiteMap
 from blog.views import title_search_view
@@ -56,19 +55,12 @@ urlpatterns = [
     path('health/', health_check, name='health_check'),
 ]
 urlpatterns += i18n_patterns(
-    re_path(r'^admin/', admin_site.urls),
     re_path(r'', include('blog.urls', namespace='blog')),
-    re_path(r'mdeditor/', include('mdeditor.urls')),
-    re_path(r'', include('comments.urls', namespace='comment')),
-    re_path(r'', include('accounts.urls', namespace='account')),
-    re_path(r'', include('oauth.urls', namespace='oauth')),
     re_path(r'^sitemap\.xml$', sitemap, {'sitemaps': sitemaps},
             name='django.contrib.sitemaps.views.sitemap'),
     re_path(r'^feed/$', DjangoBlogFeed()),
     re_path(r'^rss/$', DjangoBlogFeed()),
-    re_path('^search', title_search_view, name='search'),
-    re_path(r'', include('servermanager.urls', namespace='servermanager')),
-    re_path(r'', include('owntracks.urls', namespace='owntracks'))
+    re_path('^search', title_search_view, name='search')
     , prefix_default_language=False) + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL,

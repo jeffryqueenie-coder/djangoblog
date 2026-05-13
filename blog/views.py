@@ -16,7 +16,6 @@ from django.views.generic.list import ListView
 from haystack.views import SearchView
 
 from blog.models import Article, Category, LinkShowType, Links, NewsItem, Tag
-from comments.forms import CommentForm
 from djangoblog.plugin_manage import hooks
 from djangoblog.plugin_manage.hook_constants import ARTICLE_CONTENT_HOOK_NAME
 from djangoblog.utils import cache, get_blog_setting, get_sha256
@@ -140,8 +139,6 @@ class ArticleDetailView(DetailView):
     context_object_name = "article"
 
     def get_context_data(self, **kwargs):
-        comment_form = CommentForm()
-
         # 优化：直接查询父评论，减少数据库查询
         from comments.models import Comment
         parent_comments = Comment.objects.filter(
@@ -177,7 +174,6 @@ class ArticleDetailView(DetailView):
         if prev_page:
             kwargs[
                 'comment_prev_page_url'] = self.object.get_absolute_url() + f'?comment_page={prev_page}#commentlist-container'
-        kwargs['form'] = comment_form
         kwargs['article_comments'] = article_comments
         kwargs['p_comments'] = p_comments
         kwargs['comment_count'] = len(

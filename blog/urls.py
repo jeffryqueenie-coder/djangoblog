@@ -55,12 +55,4 @@ urlpatterns = [
         'links.html',
         views.LinkListView.as_view(),
         name='links'),
-    path(
-        r'upload',
-        views.fileupload,
-        name='upload'),
-    path(
-        r'clean',
-        views.clean_cache_view,
-        name='clean'),
 ]
