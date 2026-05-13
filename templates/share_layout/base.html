@@ -73,9 +73,9 @@
 
     <!-- RSS和图标 -->
     <link rel="alternate" type="application/rss+xml" title="{{ SITE_NAME }} &raquo; Feed" href="/feed"/>
-    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon"/>
-    <link rel="icon" href="/favicon.ico" type="image/x-icon"/>
-    <link rel="apple-touch-icon" href="/favicon.ico"/>
+    <link rel="icon" href="{% static 'blog/favicon.svg' %}" type="image/svg+xml"/>
+    <link rel="shortcut icon" href="{% static 'blog/favicon.svg' %}" type="image/svg+xml"/>
+    <link rel="apple-touch-icon" href="{% static 'blog/favicon.svg' %}"/>
 
     <!-- 关键CSS：防止深色模式闪烁 + 首屏优化（bootstrap 样式，Tailwind 加载前生效，颜色值与 design system 一致） -->
     <style>
