@@ -1,17 +1,21 @@
 import os
 from datetime import datetime, timezone as datetime_timezone
-from unittest.mock import patch
+from types import SimpleNamespace
+from unittest.mock import Mock, patch
 
 from django.test import SimpleTestCase
 from django.utils import timezone
 
 from blog.services.collectors import (
     DEFAULT_TECH_FEEDS,
+    determine_article_taxonomy,
     entry_published_at,
     is_before_cutoff,
     get_env_int,
     get_optional_env_int,
+    normalize_feed_configs,
     parse_feed_entries,
+    parse_feed_configs,
     parse_feed_list,
     sort_feed_entries,
 )
@@ -96,14 +100,96 @@ class FeedCollectorConfigTest(SimpleTestCase):
     @patch.dict(os.environ, {'TECH_BLOG_FEEDS': ''}, clear=False)
     def test_parse_feed_list_uses_default_feeds(self):
         self.assertEqual(parse_feed_list(), DEFAULT_TECH_FEEDS)
-        self.assertGreaterEqual(len(DEFAULT_TECH_FEEDS), 20)
+        self.assertGreaterEqual(len(DEFAULT_TECH_FEEDS), 35)
+        self.assertIn('https://go.dev/blog/feed.atom', DEFAULT_TECH_FEEDS)
+        self.assertIn('https://nextjs.org/feed.xml', DEFAULT_TECH_FEEDS)
+        self.assertIn('https://nodejs.org/en/feed/blog.xml', DEFAULT_TECH_FEEDS)
 
     @patch.dict(os.environ, {'TECH_BLOG_FEEDS': ' https://a.test/feed.xml,https://b.test/rss '}, clear=False)
     def test_parse_feed_list_uses_env_feeds(self):
         self.assertEqual(parse_feed_list(), ['https://a.test/feed.xml', 'https://b.test/rss'])
+
+    @patch.dict(
+        os.environ,
+        {
+            'TECH_BLOG_FEEDS': '',
+            'TECH_BLOG_EXTRA_FEEDS': ' https://example.com/react-weekly.xml,https://example.com/platform/go/feed.xml ',
+        },
+        clear=False,
+    )
+    def test_parse_feed_configs_appends_extra_feeds(self):
+        configs = parse_feed_configs()
+        urls = [config.url for config in configs]
+
+        self.assertIn('https://example.com/react-weekly.xml', urls)
+        self.assertIn('https://example.com/platform/go/feed.xml', urls)
+
+    def test_normalize_feed_configs_uses_default_metadata(self):
+        configs = normalize_feed_configs(['https://nextjs.org/feed.xml', 'https://go.dev/blog/feed.atom'])
+
+        self.assertEqual(configs[0].category, '前端开发')
+        self.assertIn('Next.js', configs[0].tags)
+        self.assertEqual(configs[1].category, '后端开发')
+        self.assertIn('Go', configs[1].tags)
+
+    def test_determine_article_taxonomy_uses_keywords_for_general_feed(self):
+        category_name, tag_names = determine_article_taxonomy({
+            'title': 'Scaling PostgreSQL and Redis for high-throughput APIs',
+            'summary': 'Practical notes on query tuning, cache invalidation, and service latency.',
+            'source_name': 'InfoQ',
+            'feed_category': '',
+            'feed_tags': ('InfoQ', '全栈'),
+        })
+
+        self.assertEqual(category_name, '数据库')
+        self.assertIn('PostgreSQL', tag_names)
+        self.assertIn('Redis', tag_names)
+        self.assertIn('数据库', tag_names)
 
     @patch.dict(os.environ, {'TECH_ARTICLE_LIMIT': '12', 'BAD_INT': 'abc'}, clear=False)
     def test_env_int_helpers(self):
         self.assertEqual(get_env_int('TECH_ARTICLE_LIMIT', 5), 12)
         self.assertEqual(get_env_int('BAD_INT', 5), 5)
         self.assertIsNone(get_optional_env_int('MISSING_INT'))
+
+
+class FeedCollectorPublishingTest(SimpleTestCase):
+    @patch('blog.services.collectors.Tag.objects.get_or_create')
+    @patch('blog.services.collectors.Article.objects.create')
+    @patch('blog.services.collectors.Category.objects.get_or_create')
+    @patch('blog.services.collectors.get_default_author')
+    def test_publish_rewritten_article_assigns_category_and_tags(
+        self,
+        get_default_author_mock,
+        category_get_or_create_mock,
+        article_create_mock,
+        tag_get_or_create_mock,
+    ):
+        from blog.services.collectors import publish_rewritten_article
+
+        fake_category = SimpleNamespace(name='后端开发')
+        fake_author = SimpleNamespace(username='collector-admin')
+        fake_article = Mock()
+        fake_article.tags = Mock()
+
+        get_default_author_mock.return_value = fake_author
+        category_get_or_create_mock.return_value = (fake_category, True)
+        article_create_mock.return_value = fake_article
+        tag_get_or_create_mock.side_effect = lambda name: (SimpleNamespace(name=name), True)
+
+        article = publish_rewritten_article(
+            {
+                'title': 'Go runtime tuning for API services',
+                'summary': 'Latency tuning, goroutines, and service concurrency.',
+                'url': 'https://example.com/go-runtime-tuning',
+                'published_at': timezone.now(),
+                'feed_category': '后端开发',
+                'feed_tags': ('Go', '并发'),
+            },
+            '# Go runtime tuning for API services\n\nUse worker pools and profile allocations.',
+        )
+
+        self.assertIs(article, fake_article)
+        category_get_or_create_mock.assert_called_once_with(name='后端开发')
+        added_tag_names = [call.args[0].name for call in fake_article.tags.add.call_args_list]
+        self.assertEqual(set(added_tag_names), {'Go', '并发', '后端'})

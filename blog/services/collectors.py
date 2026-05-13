@@ -22,36 +22,63 @@ from djangoblog.utils import cache
 
 logger = logging.getLogger(__name__)
 AIHOT_URL = 'https://aihot.virxact.com/'
-DEFAULT_TECH_FEEDS = [
-    'https://www.djangoproject.com/rss/weblog/',
-    'https://realpython.com/atom.xml',
-    'https://blog.python.org/feeds/posts/default',
-    'https://kubernetes.io/feed.xml',
-    'https://www.docker.com/blog/feed/',
-    'https://blog.cloudflare.com/rss/',
-    'https://github.blog/engineering/feed/',
-    'https://netflixtechblog.com/feed/',
-    'https://engineering.fb.com/feed/',
-    'https://engineering.atspotify.com/feed/',
-    'https://slack.engineering/feed/',
-    'https://dropbox.tech/feed',
-    'https://medium.com/feed/airbnb-engineering',
-    'https://huggingface.co/blog/feed.xml',
-    'https://pytorch.org/blog/feed.xml',
-    'https://blog.tensorflow.org/feeds/posts/default?alt=rss',
-    'https://openai.com/news/rss.xml',
-    'https://www.cncf.io/feed/',
-    'https://feed.infoq.com/development/',
-    'https://feed.infoq.com/ai-ml-data-eng/news/',
-    'https://feed.infoq.com/devops/news/',
-    'https://aws.amazon.com/blogs/architecture/feed/',
-    'https://aws.amazon.com/blogs/machine-learning/feed/',
-    'https://cloud.google.com/blog/rss',
-    'https://devblogs.microsoft.com/python/feed/',
-    'https://tech.meituan.com/feed/',
-    'https://www.ruanyifeng.com/blog/atom.xml',
-    'https://www.oschina.net/news/rss',
+
+
+@dataclass(frozen=True)
+class FeedConfig:
+    url: str
+    category: str = '文章'
+    tags: tuple[str, ...] = ()
+
+
+DEFAULT_TECH_FEED_CONFIGS = [
+    FeedConfig('https://www.djangoproject.com/rss/weblog/', '后端开发', ('Python', 'Django', '后端')),
+    FeedConfig('https://realpython.com/atom.xml', '后端开发', ('Python', '后端')),
+    FeedConfig('https://blog.python.org/feeds/posts/default', '后端开发', ('Python', '后端')),
+    FeedConfig('https://devblogs.microsoft.com/python/feed/', '后端开发', ('Python', '后端')),
+    FeedConfig('https://go.dev/blog/feed.atom', '后端开发', ('Go', '后端')),
+    FeedConfig('https://blog.golang.org/feed.atom', '后端开发', ('Go', '后端')),
+    FeedConfig('https://nodejs.org/en/feed/blog.xml', '后端开发', ('Node.js', 'JavaScript', '后端')),
+    FeedConfig('https://blog.rust-lang.org/feed.xml', '后端开发', ('Rust', '系统编程', '后端')),
+    FeedConfig('https://spring.io/blog.atom', '后端开发', ('Java', 'Spring', '后端')),
+    FeedConfig('https://nextjs.org/feed.xml', '前端开发', ('Next.js', 'React', '前端')),
+    FeedConfig('https://react.dev/rss.xml', '前端开发', ('React', '前端')),
+    FeedConfig('https://blog.vuejs.org/feed.xml', '前端开发', ('Vue', '前端')),
+    FeedConfig('https://devblogs.microsoft.com/typescript/feed/', '前端开发', ('TypeScript', '前端')),
+    FeedConfig('https://developer.chrome.com/static/blog/feed.xml', '前端开发', ('Chrome', 'Web 性能', '前端')),
+    FeedConfig('https://web.dev/feed.xml', '前端开发', ('Web 性能', '前端')),
+    FeedConfig('https://v8.dev/blog.atom', '前端开发', ('JavaScript', 'V8', '前端')),
+    FeedConfig('https://kubernetes.io/feed.xml', '云原生', ('Kubernetes', '云原生')),
+    FeedConfig('https://www.docker.com/blog/feed/', '云原生', ('Docker', '云原生')),
+    FeedConfig('https://www.cncf.io/feed/', '云原生', ('CNCF', '云原生')),
+    FeedConfig('https://istio.io/latest/feed.xml', '云原生', ('Istio', 'Service Mesh', '云原生')),
+    FeedConfig('https://blog.cloudflare.com/rss/', '云平台', ('Cloudflare', '平台工程')),
+    FeedConfig('https://aws.amazon.com/blogs/architecture/feed/', '架构设计', ('AWS', '架构设计')),
+    FeedConfig('https://aws.amazon.com/blogs/machine-learning/feed/', 'AI 工程', ('AWS', 'AI', '机器学习')),
+    FeedConfig('https://cloud.google.com/blog/rss', '云平台', ('GCP', '云平台')),
+    FeedConfig('https://azure.microsoft.com/en-us/blog/feed/', '云平台', ('Azure', '云平台')),
+    FeedConfig('https://planet.postgresql.org/rss20.xml', '数据库', ('PostgreSQL', '数据库')),
+    FeedConfig('https://planetscale.com/blog/rss.xml', '数据库', ('MySQL', '数据库')),
+    FeedConfig('https://planet.mysql.com/rss20.xml', '数据库', ('MySQL', '数据库')),
+    FeedConfig('https://huggingface.co/blog/feed.xml', 'AI 工程', ('Hugging Face', 'AI', 'LLM')),
+    FeedConfig('https://pytorch.org/blog/feed.xml', 'AI 工程', ('PyTorch', 'AI', '机器学习')),
+    FeedConfig('https://blog.tensorflow.org/feeds/posts/default?alt=rss', 'AI 工程', ('TensorFlow', 'AI', '机器学习')),
+    FeedConfig('https://openai.com/news/rss.xml', 'AI 工程', ('OpenAI', 'AI', 'LLM')),
+    FeedConfig('https://feed.infoq.com/development/', '架构设计', ('InfoQ', '全栈')),
+    FeedConfig('https://feed.infoq.com/ai-ml-data-eng/news/', 'AI 工程', ('InfoQ', 'AI', '数据工程')),
+    FeedConfig('https://feed.infoq.com/devops/news/', '工程效能', ('DevOps', '工程效能')),
+    FeedConfig('https://github.blog/engineering/feed/', '工程效能', ('GitHub', '工程效能', '平台工程')),
+    FeedConfig('https://netflixtechblog.com/feed/', '架构设计', ('Netflix', '分布式系统', '架构设计')),
+    FeedConfig('https://engineering.fb.com/feed/', '架构设计', ('Meta', '架构设计', '工程')),
+    FeedConfig('https://engineering.atspotify.com/feed/', '架构设计', ('Spotify', '架构设计', '数据')),
+    FeedConfig('https://slack.engineering/feed/', '工程效能', ('Slack', '工程效能', '平台工程')),
+    FeedConfig('https://dropbox.tech/feed', '架构设计', ('Dropbox', '存储', '架构设计')),
+    FeedConfig('https://medium.com/feed/airbnb-engineering', '前端开发', ('Airbnb', '前端', '工程实践')),
+    FeedConfig('https://tech.meituan.com/feed/', '全栈实践', ('美团', '工程实践', '全栈')),
+    FeedConfig('https://www.ruanyifeng.com/blog/atom.xml', '全栈实践', ('阮一峰', '全栈', '技术趋势')),
+    FeedConfig('https://www.oschina.net/news/rss', '全栈实践', ('开源中国', '全栈', '开源')),
 ]
+DEFAULT_TECH_FEEDS = [config.url for config in DEFAULT_TECH_FEED_CONFIGS]
 TECH_ARTICLE_WRITER_SKILL_PATH = (
     Path(__file__).resolve().parents[1]
     / 'skills'
@@ -65,6 +92,46 @@ class CollectorResult:
     created: int = 0
     skipped: int = 0
     failed: int = 0
+
+
+CATEGORY_KEYWORDS = (
+    ('前端开发', ('react', 'vue', 'next.js', 'nextjs', 'typescript', 'javascript', 'css', 'web', '浏览器', 'chrome', '前端')),
+    ('后端开发', ('go', 'golang', 'python', 'django', 'flask', 'fastapi', 'java', 'spring', 'node', 'node.js', 'api', 'server', '后端')),
+    ('云原生', ('kubernetes', 'docker', 'container', 'helm', 'istio', 'service mesh', 'cloud native', '云原生')),
+    ('数据库', ('postgresql', 'mysql', 'redis', 'sql', 'database', '数据库', '缓存')),
+    ('AI 工程', ('openai', 'llm', 'rag', 'hugging face', 'pytorch', 'tensorflow', 'model', '模型', '推理', 'agent', 'ai')),
+    ('架构设计', ('architecture', 'scaling', 'distributed', 'microservice', '系统设计', '架构', '分布式', '可扩展')),
+    ('工程效能', ('ci/cd', 'cicd', 'devops', 'testing', 'observability', 'platform', '工程效率', '工程效能', '测试')),
+    ('安全与可观测', ('security', 'trace', 'tracing', 'monitoring', 'otel', 'observability', '安全', '监控')),
+    ('云平台', ('aws', 'gcp', 'azure', 'cloudflare', 'serverless', '云平台')),
+    ('全栈实践', ('全栈', '实践', '产品工程', 'engineering', '开发者体验', 'dx')),
+)
+
+TAG_KEYWORDS = {
+    'React': ('react',),
+    'Vue': ('vue',),
+    'Next.js': ('next.js', 'nextjs'),
+    'TypeScript': ('typescript',),
+    'JavaScript': ('javascript',),
+    'Go': ('go', 'golang'),
+    'Python': ('python',),
+    'Django': ('django',),
+    'Java': ('java', 'spring'),
+    'Rust': ('rust',),
+    'Kubernetes': ('kubernetes', 'k8s'),
+    'Docker': ('docker',),
+    'PostgreSQL': ('postgresql',),
+    'MySQL': ('mysql',),
+    'Redis': ('redis',),
+    'OpenAI': ('openai',),
+    'LLM': ('llm', 'rag', 'agent'),
+    'PyTorch': ('pytorch',),
+    'TensorFlow': ('tensorflow',),
+    'Cloudflare': ('cloudflare',),
+    'AWS': ('aws',),
+    'GCP': ('gcp', 'google cloud'),
+    'Azure': ('azure',),
+}
 
 
 def fetch_url(url, timeout=20):
@@ -169,16 +236,16 @@ def parse_feed_entries(xml_text, source_url):
 
 
 def collect_tech_articles(limit=5, feeds=None, hours=None):
-    feeds = feeds or parse_feed_list()
+    feed_configs = normalize_feed_configs(feeds or parse_feed_list())
     cutoff = timezone.now() - timezone.timedelta(hours=hours) if hours else None
     result = CollectorResult()
     entries_by_url = {}
 
-    for feed_url in feeds:
+    for feed in feed_configs:
         try:
-            entries = parse_feed_entries(fetch_url(feed_url), feed_url)
+            entries = parse_feed_entries(fetch_url(feed.url), feed.url)
         except Exception:
-            logger.exception('Failed to fetch or parse feed: %s', feed_url)
+            logger.exception('Failed to fetch or parse feed: %s', feed.url)
             result.failed += 1
             continue
 
@@ -191,6 +258,8 @@ def collect_tech_articles(limit=5, feeds=None, hours=None):
                 result.skipped += 1
                 continue
             entry['published_at'] = published_at
+            entry['feed_category'] = feed.category
+            entry['feed_tags'] = feed.tags
             entries_by_url.setdefault(entry['url'], entry)
 
     for entry in sort_feed_entries(entries_by_url.values()):
@@ -261,7 +330,8 @@ def rewrite_article(entry):
 
 
 def publish_rewritten_article(entry, body):
-    category, _ = Category.objects.get_or_create(name='文章')
+    category_name, tag_names = determine_article_taxonomy(entry)
+    category, _ = Category.objects.get_or_create(name=category_name)
     author = get_default_author()
     body = strip_source_link_lines(body)
     title = extract_markdown_title(body) or entry['title']
@@ -276,6 +346,9 @@ def publish_rewritten_article(entry, body):
         author=author,
         category=category,
     )
+    for tag_name in tag_names:
+        tag, _ = Tag.objects.get_or_create(name=tag_name[:30])
+        article.tags.add(tag)
     return article
 
 
@@ -322,10 +395,100 @@ def run_collectors_loop(interval=1800):
 
 
 def parse_feed_list():
+    return [config.url for config in parse_feed_configs()]
+
+
+def parse_feed_configs():
     raw = os.environ.get('TECH_BLOG_FEEDS', '')
-    if not raw:
-        return DEFAULT_TECH_FEEDS
-    return [item.strip() for item in raw.split(',') if item.strip()]
+    extra_raw = os.environ.get('TECH_BLOG_EXTRA_FEEDS', '')
+    if raw:
+        configs = normalize_feed_configs([item.strip() for item in raw.split(',') if item.strip()])
+    else:
+        configs = list(DEFAULT_TECH_FEED_CONFIGS)
+    if extra_raw:
+        configs.extend(
+            normalize_feed_configs([item.strip() for item in extra_raw.split(',') if item.strip()])
+        )
+    return deduplicate_feed_configs(configs)
+
+
+def normalize_feed_configs(feeds):
+    configs = []
+    for feed in feeds:
+        if isinstance(feed, FeedConfig):
+            configs.append(feed)
+            continue
+        matched = next((item for item in DEFAULT_TECH_FEED_CONFIGS if item.url == feed), None)
+        if matched:
+            configs.append(matched)
+        else:
+            configs.append(FeedConfig(feed))
+    return configs
+
+
+def deduplicate_feed_configs(configs):
+    deduped = []
+    seen = set()
+    for config in configs:
+        if config.url in seen:
+            continue
+        deduped.append(config)
+        seen.add(config.url)
+    return deduped
+
+
+def determine_article_taxonomy(entry):
+    feed_category = (entry.get('feed_category') or '').strip()
+    feed_tags = tuple(dict.fromkeys(entry.get('feed_tags') or ()))
+    combined_text = ' '.join(
+        filter(
+            None,
+            [
+                entry.get('title') or '',
+                entry.get('summary') or '',
+                entry.get('source_name') or '',
+                ' '.join(feed_tags),
+                feed_category,
+            ],
+        )
+    ).lower()
+
+    category_name = feed_category or infer_category_from_text(combined_text)
+    detected_tags = list(feed_tags)
+    for tag_name, keywords in TAG_KEYWORDS.items():
+        if any(keyword in combined_text for keyword in keywords):
+            detected_tags.append(tag_name)
+    detected_tags.extend(default_tags_for_category(category_name))
+    return category_name, tuple(dict.fromkeys(tag for tag in detected_tags if tag))
+
+
+def infer_category_from_text(text):
+    best_category = '全栈实践'
+    best_score = 0
+    for category_name, keywords in CATEGORY_KEYWORDS:
+        score = sum(1 for keyword in keywords if keyword in text)
+        if score > best_score:
+            best_category = category_name
+            best_score = score
+    if best_score > 0:
+        return best_category
+    return '全栈实践'
+
+
+def default_tags_for_category(category_name):
+    defaults = {
+        '前端开发': ('前端',),
+        '后端开发': ('后端',),
+        '云原生': ('云原生',),
+        '数据库': ('数据库',),
+        'AI 工程': ('AI',),
+        '架构设计': ('架构设计',),
+        '工程效能': ('工程效能',),
+        '安全与可观测': ('安全', '可观测性'),
+        '云平台': ('云平台',),
+        '全栈实践': ('全栈',),
+    }
+    return defaults.get(category_name, ())
 
 
 def sort_feed_entries(entries):
