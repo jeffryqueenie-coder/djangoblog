@@ -9,10 +9,11 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument('--limit', type=int, default=5)
         parser.add_argument('--feed', action='append', dest='feeds')
+        parser.add_argument('--hours', type=int, default=None, help='只处理最近 N 小时内发布的文章')
 
     def handle(self, *args, **options):
         feeds = options.get('feeds') or parse_feed_list()
-        result = collect_tech_articles(limit=options['limit'], feeds=feeds)
+        result = collect_tech_articles(limit=options['limit'], feeds=feeds, hours=options['hours'])
         self.stdout.write(self.style.SUCCESS(
             f'Tech articles: created={result.created}, skipped={result.skipped}, failed={result.failed}'
         ))

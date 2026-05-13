@@ -26,6 +26,31 @@ DEFAULT_TECH_FEEDS = [
     'https://www.djangoproject.com/rss/weblog/',
     'https://realpython.com/atom.xml',
     'https://blog.python.org/feeds/posts/default',
+    'https://kubernetes.io/feed.xml',
+    'https://www.docker.com/blog/feed/',
+    'https://blog.cloudflare.com/rss/',
+    'https://github.blog/engineering/feed/',
+    'https://netflixtechblog.com/feed/',
+    'https://engineering.fb.com/feed/',
+    'https://engineering.atspotify.com/feed/',
+    'https://slack.engineering/feed/',
+    'https://dropbox.tech/feed',
+    'https://medium.com/feed/airbnb-engineering',
+    'https://huggingface.co/blog/feed.xml',
+    'https://pytorch.org/blog/feed.xml',
+    'https://blog.tensorflow.org/feeds/posts/default?alt=rss',
+    'https://openai.com/news/rss.xml',
+    'https://www.cncf.io/feed/',
+    'https://feed.infoq.com/development/',
+    'https://feed.infoq.com/ai-ml-data-eng/news/',
+    'https://feed.infoq.com/devops/news/',
+    'https://aws.amazon.com/blogs/architecture/feed/',
+    'https://aws.amazon.com/blogs/machine-learning/feed/',
+    'https://cloud.google.com/blog/rss',
+    'https://devblogs.microsoft.com/python/feed/',
+    'https://tech.meituan.com/feed/',
+    'https://www.ruanyifeng.com/blog/atom.xml',
+    'https://www.oschina.net/news/rss',
 ]
 TECH_ARTICLE_WRITER_SKILL_PATH = (
     Path(__file__).resolve().parents[1]
@@ -117,36 +142,39 @@ def parse_feed_entries(xml_text, source_url):
     entries = []
 
     if root.tag.endswith('rss'):
+        channel = root.find('.//channel')
+        source_name = child_text(channel, 'title') if channel is not None else source_url
         for item in root.findall('.//channel/item'):
             entries.append({
-                'title': child_text(item, 'title'),
-                'url': child_text(item, 'link'),
+                'title': normalize_text(child_text(item, 'title')),
+                'url': normalize_text(child_text(item, 'link')),
                 'summary': strip_html(child_text(item, 'description')),
                 'published_at': parse_datetime(child_text(item, 'pubDate')),
-                'source_name': source_url,
+                'source_name': source_name or source_url,
             })
         return entries
 
     ns = {'atom': 'http://www.w3.org/2005/Atom'}
+    source_name = child_text(root, 'title') or source_url
     for entry in root.findall('.//atom:entry', ns):
         link = entry.find('atom:link[@rel="alternate"]', ns) or entry.find('atom:link', ns)
         entries.append({
-            'title': child_text(entry, 'title'),
-            'url': link.get('href') if link is not None else '',
+            'title': normalize_text(child_text(entry, 'title')),
+            'url': normalize_text(link.get('href') if link is not None else ''),
             'summary': strip_html(child_text(entry, 'summary') or child_text(entry, 'content')),
             'published_at': parse_datetime(child_text(entry, 'updated') or child_text(entry, 'published')),
-            'source_name': source_url,
+            'source_name': source_name,
         })
     return entries
 
 
-def collect_tech_articles(limit=5, feeds=None):
+def collect_tech_articles(limit=5, feeds=None, hours=None):
     feeds = feeds or parse_feed_list()
+    cutoff = timezone.now() - timezone.timedelta(hours=hours) if hours else None
     result = CollectorResult()
+    entries_by_url = {}
 
     for feed_url in feeds:
-        if result.created >= limit:
-            break
         try:
             entries = parse_feed_entries(fetch_url(feed_url), feed_url)
         except Exception:
@@ -155,26 +183,32 @@ def collect_tech_articles(limit=5, feeds=None):
             continue
 
         for entry in entries:
-            if result.created >= limit:
-                break
             if not entry['title'] or not entry['url']:
                 result.skipped += 1
                 continue
-            if Article.objects.filter(body__contains=entry['url']).exists():
+            if cutoff and entry.get('published_at') and entry['published_at'] < cutoff:
                 result.skipped += 1
                 continue
-            rewritten = rewrite_article(entry)
-            if not rewritten:
-                result.skipped += 1
-                continue
-            try:
-                publish_rewritten_article(entry, rewritten)
-                result.created += 1
-            except IntegrityError:
-                result.skipped += 1
-            except Exception:
-                logger.exception('Failed to publish rewritten article: %s', entry['url'])
-                result.failed += 1
+            entries_by_url.setdefault(entry['url'], entry)
+
+    for entry in sort_feed_entries(entries_by_url.values()):
+        if result.created >= limit:
+            break
+        if Article.objects.filter(body__contains=entry['url']).exists():
+            result.skipped += 1
+            continue
+        rewritten = rewrite_article(entry)
+        if not rewritten:
+            result.skipped += 1
+            continue
+        try:
+            publish_rewritten_article(entry, rewritten)
+            result.created += 1
+        except IntegrityError:
+            result.skipped += 1
+        except Exception:
+            logger.exception('Failed to publish rewritten article: %s', entry['url'])
+            result.failed += 1
 
     cache.clear()
     return result
@@ -265,8 +299,23 @@ def get_default_author():
 
 def run_collectors_loop(interval=1800):
     while True:
-        collect_aihot_news()
-        collect_tech_articles()
+        news_result = collect_aihot_news(
+            limit=get_env_int('AIHOT_NEWS_LIMIT', 30),
+            hours=get_optional_env_int('AIHOT_NEWS_LOOKBACK_HOURS'),
+        )
+        article_result = collect_tech_articles(
+            limit=get_env_int('TECH_ARTICLE_LIMIT', 5),
+            hours=get_optional_env_int('TECH_ARTICLE_LOOKBACK_HOURS'),
+        )
+        logger.info(
+            'Collectors finished: news created=%s skipped=%s failed=%s; articles created=%s skipped=%s failed=%s',
+            news_result.created,
+            news_result.skipped,
+            news_result.failed,
+            article_result.created,
+            article_result.skipped,
+            article_result.failed,
+        )
         time.sleep(interval)
 
 
@@ -275,6 +324,41 @@ def parse_feed_list():
     if not raw:
         return DEFAULT_TECH_FEEDS
     return [item.strip() for item in raw.split(',') if item.strip()]
+
+
+def sort_feed_entries(entries):
+    return sorted(entries, key=feed_entry_timestamp, reverse=True)
+
+
+def feed_entry_timestamp(entry):
+    published_at = entry.get('published_at')
+    if not published_at:
+        return 0
+    return published_at.timestamp()
+
+
+def get_env_int(name, default):
+    value = os.environ.get(name)
+    if value in (None, ''):
+        return default
+    try:
+        parsed = int(value)
+    except (TypeError, ValueError):
+        logger.warning('Invalid integer env %s=%r, using %s', name, value, default)
+        return default
+    return parsed if parsed > 0 else default
+
+
+def get_optional_env_int(name):
+    value = os.environ.get(name)
+    if value in (None, ''):
+        return None
+    try:
+        parsed = int(value)
+    except (TypeError, ValueError):
+        logger.warning('Invalid integer env %s=%r, ignoring it', name, value)
+        return None
+    return parsed if parsed > 0 else None
 
 
 def child_text(node, name):
