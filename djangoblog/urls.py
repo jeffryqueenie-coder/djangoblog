@@ -19,7 +19,7 @@ from django.conf.urls.static import static
 from django.contrib.sitemaps.views import sitemap
 from django.urls import path, include
 from django.urls import re_path
-from django.http import JsonResponse
+from django.http import HttpResponse, JsonResponse
 import time
 
 from djangoblog.feeds import DjangoBlogFeed
@@ -50,14 +50,29 @@ def health_check(request):
         'timestamp': time.time()
     })
 
+
+def robots_txt(request):
+    lines = [
+        'User-agent: *',
+        'Allow: /',
+        'Disallow: /admin',
+        'Disallow: /login',
+        'Disallow: /oauth',
+        'Disallow: /owntracks',
+        'Disallow: /mdeditor',
+        f'Sitemap: {request.scheme}://{request.get_host()}/sitemap.xml',
+    ]
+    return HttpResponse('\n'.join(lines) + '\n', content_type='text/plain')
+
 urlpatterns = [
     path('i18n/', include('django.conf.urls.i18n')),
     path('health/', health_check, name='health_check'),
+    path('robots.txt', robots_txt, name='robots_txt'),
+    path('sitemap.xml', sitemap, {'sitemaps': sitemaps},
+         name='django.contrib.sitemaps.views.sitemap'),
 ]
 urlpatterns += i18n_patterns(
     re_path(r'', include('blog.urls', namespace='blog')),
-    re_path(r'^sitemap\.xml$', sitemap, {'sitemaps': sitemaps},
-            name='django.contrib.sitemaps.views.sitemap'),
     re_path(r'^feed/$', DjangoBlogFeed()),
     re_path(r'^rss/$', DjangoBlogFeed()),
     re_path('^search', title_search_view, name='search')

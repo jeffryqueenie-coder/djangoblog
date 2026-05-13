@@ -6,6 +6,8 @@ from djangoblog.utils import cache, get_blog_setting
 from .models import Category, Article
 
 logger = logging.getLogger(__name__)
+PUBLIC_SITE_NAME = '开发者雷达'
+PUBLIC_SITE_DESCRIPTION = 'AI 精选与摘要技术文章、编程实践和人工智能新闻。'
 
 
 def seo_processor(requests):
@@ -15,6 +17,9 @@ def seo_processor(requests):
         # 更新动态值（不需要缓存的内容）
         value['SITE_BASE_URL'] = requests.scheme + '://' + requests.get_host() + '/'
         value['CURRENT_YEAR'] = timezone.now().year
+        value['SITE_NAME'] = PUBLIC_SITE_NAME
+        value['SITE_DESCRIPTION'] = PUBLIC_SITE_DESCRIPTION
+        value['SITE_SEO_DESCRIPTION'] = PUBLIC_SITE_DESCRIPTION
         return value
     else:
         logger.info('set processor cache.')
@@ -28,11 +33,11 @@ def seo_processor(requests):
         )
 
         value = {
-            'SITE_NAME': setting.site_name,
+            'SITE_NAME': PUBLIC_SITE_NAME,
             'SHOW_GOOGLE_ADSENSE': setting.show_google_adsense,
             'GOOGLE_ADSENSE_CODES': setting.google_adsense_codes,
-            'SITE_SEO_DESCRIPTION': setting.site_seo_description,
-            'SITE_DESCRIPTION': setting.site_description,
+            'SITE_SEO_DESCRIPTION': PUBLIC_SITE_DESCRIPTION,
+            'SITE_DESCRIPTION': PUBLIC_SITE_DESCRIPTION,
             'SITE_KEYWORDS': setting.site_keywords,
             'SITE_BASE_URL': requests.scheme + '://' + requests.get_host() + '/',
             'ARTICLE_SUB_LENGTH': setting.article_sub_length,

@@ -35,6 +35,7 @@ DEBUG = env_to_bool('DJANGO_DEBUG', True)
 # DEBUG = False
 TESTING = len(sys.argv) > 1 and sys.argv[1] == 'test'
 PUBLIC_READ_ONLY_MODE = env_to_bool('PUBLIC_READ_ONLY_MODE', True)
+PUBLIC_RATE_LIMIT_PER_MINUTE = int(os.environ.get('PUBLIC_RATE_LIMIT_PER_MINUTE') or 180)
 
 # ALLOWED_HOSTS = []
 ALLOWED_HOSTS = ['*', '127.0.0.1', 'example.com']

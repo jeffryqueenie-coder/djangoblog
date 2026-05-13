@@ -27,7 +27,7 @@
                 <a href="{% url 'blog:index' %}"
                    class="editorial-nav-link {% if current_url == 'index' or current_url == 'index_page' %}is-active{% endif %}"
                    {% if current_url == 'index' or current_url == 'index_page' %}aria-current="page"{% endif %}>
-                    {% trans 'index' %}
+                    技术摘要
                 </a>
 
                 {% query nav_category_list parent_category__isnull=True as nav_top_cats %}
@@ -78,7 +78,7 @@
                 <a href="{% url 'blog:news' %}"
                    class="editorial-nav-link {% if current_url == 'news' %}is-active{% endif %}"
                    {% if current_url == 'news' %}aria-current="page"{% endif %}>
-                    新闻
+                    AI 快讯
                 </a>
                 {% for page in nav_pages %}
                     <a href="{{ page.get_absolute_url }}"
@@ -97,8 +97,8 @@
                 <input id="header-search-input"
                        name="q"
                        type="search"
-                       placeholder="搜索文章/新闻..."
-                       aria-label="搜索文章和新闻"
+                       placeholder="搜索技术摘要/快讯..."
+                       aria-label="搜索技术摘要和 AI 快讯"
                        class="min-w-0 flex-1 appearance-none border-0 bg-transparent p-0 text-[13px] text-foreground placeholder:text-muted-foreground focus:outline-none"/>
                 <svg class="size-4 shrink-0 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
@@ -139,12 +139,12 @@
          x-cloak>
         <div class="mx-auto flex max-w-container-max flex-col gap-1">
             <form action="{% url 'search' %}" method="get" class="mb-2 flex items-center gap-2 rounded-lg bg-secondary px-3 py-2">
-                <input name="q" type="search" placeholder="搜索文章/新闻..." aria-label="搜索文章和新闻" class="min-w-0 flex-1 appearance-none border-0 bg-transparent p-0 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none"/>
+                <input name="q" type="search" placeholder="搜索技术摘要/快讯..." aria-label="搜索技术摘要和 AI 快讯" class="min-w-0 flex-1 appearance-none border-0 bg-transparent p-0 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none"/>
                 <svg class="size-4 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
                 </svg>
             </form>
-            <a href="{% url 'blog:index' %}" @click="$store.nav.mobileOpen = false" class="editorial-mobile-link">{% trans 'index' %}</a>
+            <a href="{% url 'blog:index' %}" @click="$store.nav.mobileOpen = false" class="editorial-mobile-link">技术摘要</a>
             {% query nav_category_list parent_category__isnull=True as mobile_top_cats %}
             {% for category in mobile_top_cats %}
                 {% if category.name == "文章" %}
@@ -171,7 +171,7 @@
                 {% endif %}
                 {% endif %}
             {% endfor %}
-            <a href="{% url 'blog:news' %}" @click="$store.nav.mobileOpen = false" class="editorial-mobile-link">新闻</a>
+            <a href="{% url 'blog:news' %}" @click="$store.nav.mobileOpen = false" class="editorial-mobile-link">AI 快讯</a>
             {% for page in nav_pages %}
                 <a href="{{ page.get_absolute_url }}" @click="$store.nav.mobileOpen = false" class="editorial-mobile-link">{{ page.title }}</a>
             {% endfor %}

@@ -1,68 +1,53 @@
 {% load blog_tags %}
 {% load i18n %}
 
-<article id="post-{{ article.pk }}" class="editorial-article-card group p-6 transition-colors duration-300 hover:bg-secondary/30">
+<article id="post-{{ article.pk }}" class="editorial-article-card group">
+    {% article_source_name article as source_name %}
     <div class="flex flex-col gap-3">
-        <div class="flex flex-wrap items-center gap-3">
-            <a href="{{ article.category.get_absolute_url }}" class="editorial-chip">
-                {{ article.category.name }}
-            </a>
-            <span class="text-[13px] font-medium text-muted-foreground">
-                {{ article.pub_time|date:"Y-m-d" }}
-            </span>
-        </div>
-
-        <h2 class="m-0 font-headline text-[22px] font-semibold leading-snug text-primary-600 transition-colors group-hover:text-primary-500 md:text-2xl">
-            {% if isindex %}
-                <a href="{{ article.get_absolute_url }}" rel="bookmark" class="text-current hover:text-current">
-                    {% if article.article_order > 0 %}
-                        <span class="mr-1 align-middle text-[13px] font-semibold text-primary-500">置顶</span>
-                    {% endif %}
-                    {% if query %}
-                        {{ article.title|highlight_search_term:query }}
-                    {% else %}
-                        {{ article.title }}
-                    {% endif %}
-                </a>
-            {% else %}
+        <h2 class="m-0 font-headline text-[21px] font-semibold leading-snug text-primary-600 transition-colors group-hover:text-primary-500 md:text-[24px]">
+            <a href="{{ article.get_absolute_url }}" rel="bookmark" class="text-current hover:text-current">
+                {% if article.article_order > 0 %}
+                    <span class="mr-1 align-middle text-[13px] font-semibold text-primary-500">置顶</span>
+                {% endif %}
                 {% if query %}
                     {{ article.title|highlight_search_term:query }}
                 {% else %}
                     {{ article.title }}
                 {% endif %}
-            {% endif %}
+            </a>
         </h2>
 
+        <div class="flex flex-wrap items-center gap-x-3 gap-y-2 text-[13px] font-medium text-muted-foreground">
+            <a href="{{ article.category.get_absolute_url }}" class="editorial-chip">
+                {{ article.category.name }}
+            </a>
+            <time datetime="{{ article.pub_time|date:'c' }}">{{ article.pub_time|date:"Y-m-d" }}</time>
+            <span>来源：{{ source_name }}</span>
+            <span class="inline-flex items-center gap-1">
+                <svg class="size-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                </svg>
+                {{ article.views }}
+            </span>
+        </div>
+
         {% if isindex %}
-            <div class="editorial-excerpt line-clamp-3 text-[15px] leading-7 text-muted-foreground md:text-[16px]">
+            <div class="editorial-excerpt text-[15px] leading-7 text-muted-foreground">
                 {% article_summary_text article %}
             </div>
         {% endif %}
 
-        <div class="mt-3 flex flex-col gap-4 border-t border-border/20 pt-4 sm:flex-row sm:items-center sm:justify-between">
+        <div class="mt-2 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div class="flex flex-wrap gap-2">
                 {% for tag in article.tags.all|slice:":3" %}
                     <a href="{{ tag.get_absolute_url }}" class="editorial-tag"># {{ tag.name }}</a>
                 {% endfor %}
             </div>
 
-            <div class="flex items-center gap-4 text-[13px] font-medium text-muted-foreground">
-                <span class="inline-flex items-center gap-1">
-                    <svg class="size-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
-                    </svg>
-                    {{ article.views }}
-                </span>
-                {% if article.comment_status == "o" and open_site_comment %}
-                    <span class="inline-flex items-center gap-1">
-                        <svg class="size-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
-                        </svg>
-                        {{ article.comment_set.count }}
-                    </span>
-                {% endif %}
-            </div>
+            <a href="{{ article.get_absolute_url }}" class="editorial-read-more">
+                阅读全文
+            </a>
         </div>
     </div>
 </article>

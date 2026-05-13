@@ -94,8 +94,10 @@ def render_article_content(context, article, is_summary=False):
     if not article or not hasattr(article, 'body'):
         return ''
     
+    body = _strip_article_source_link_lines(article.body)
+
     # 先转换Markdown为HTML
-    html_content = CommonMarkdown.get_markdown(article.body)
+    html_content = CommonMarkdown.get_markdown(body)
     
     # 如果是摘要模式，先截断内容再应用插件
     if is_summary:
@@ -145,21 +147,61 @@ def article_summary_text(context, article):
     from django.template.defaultfilters import truncatechars
     from djangoblog.utils import get_blog_setting
 
-    html_content = CommonMarkdown.get_markdown(article.body)
+    body = _strip_article_source_link_lines(article.body)
+    html_content = CommonMarkdown.get_markdown(body)
     soup = BeautifulSoup(html_content, 'html.parser')
     for tag in soup.find_all(['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'code', 'pre', 'script', 'style']):
         tag.decompose()
 
     text = strip_tags(str(soup))
     text = re.sub(r'\s+', ' ', text).strip()
-    text = re.sub(r'[-—_ ]*原文链接[:：]\s*\S+\s*$', '', text).strip()
-    summary_length = get_blog_setting().article_sub_length
+    summary_length = min(get_blog_setting().article_sub_length, 180)
     text = truncatechars(text, summary_length)
 
     query = context.get('query')
     if query:
         return highlight_search_term(text, query)
     return text
+
+
+@register.simple_tag
+def article_source_url(article):
+    if not article or not getattr(article, 'body', None):
+        return ''
+    return _extract_article_source_url(article.body)
+
+
+@register.simple_tag
+def article_source_name(article):
+    source_url = _extract_article_source_url(getattr(article, 'body', '') or '')
+    if not source_url:
+        return '开放技术博客'
+    from urllib.parse import urlparse
+    host = urlparse(source_url).netloc.lower()
+    if host.startswith('www.'):
+        host = host[4:]
+    return host or '开放技术博客'
+
+
+def _extract_article_source_url(body):
+    for line in (body or '').splitlines():
+        markdown_match = re.search(r'\[原文链接\]\((https?://[^)\s]+)\)', line)
+        if markdown_match:
+            return markdown_match.group(1)
+        plain_match = re.search(r'原文链接[:：]\s*(https?://\S+)', line)
+        if plain_match:
+            return plain_match.group(1).rstrip(').,，。')
+    return ''
+
+
+def _strip_article_source_link_lines(body):
+    kept_lines = []
+    for line in (body or '').splitlines():
+        normalized = line.strip()
+        if re.search(r'\[?原文链接\]?|原文[:：]|source\s*link|original\s*link', normalized, re.I):
+            continue
+        kept_lines.append(line)
+    return '\n'.join(kept_lines).strip()
 
 
 @register.simple_tag

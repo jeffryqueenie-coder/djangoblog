@@ -79,8 +79,8 @@ class IndexView(OptimizedArticleQueryMixin, ArticleListView):
         context = super().get_context_data(**kwargs)
         blog_setting = get_blog_setting()
         # 提供基础SEO数据
-        context['seo_title'] = f"{blog_setting.site_name} | {blog_setting.site_description}"
-        context['seo_description'] = blog_setting.site_seo_description
+        context['seo_title'] = "开发者雷达"
+        context['seo_description'] = "AI 精选与摘要技术文章、编程实践和人工智能新闻。"
         context['seo_keywords'] = blog_setting.site_keywords
         return context
 
@@ -98,8 +98,8 @@ class NewsListView(ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         blog_setting = get_blog_setting()
-        context['seo_title'] = f"新闻 | {blog_setting.site_name}"
-        context['seo_description'] = "AI 与技术新闻聚合。"
+        context['seo_title'] = f"AI 快讯 | {blog_setting.site_name}"
+        context['seo_description'] = "AI 与技术新闻快讯。"
         context['seo_keywords'] = f"技术新闻,AI新闻,{blog_setting.site_keywords}"
         context['linktype'] = LinkShowType.L
         return context

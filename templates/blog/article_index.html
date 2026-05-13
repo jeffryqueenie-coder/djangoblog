@@ -3,8 +3,8 @@
 {% load i18n %}
 
 {% block header %}
-    <title>{{ SITE_NAME }}</title>
-    <meta name="description" content="{{ SITE_DESCRIPTION }}"/>
+    <title>开发者雷达</title>
+    <meta name="description" content="AI 精选与摘要技术文章、编程实践和人工智能新闻。"/>
     <meta name="keywords" content="{{ SITE_KEYWORDS }}"/>
 {% endblock %}
 
@@ -23,8 +23,11 @@
                         <p class="mb-2 text-[13px] font-medium text-muted-foreground">作者</p>
                         <h1 class="m-0 font-headline text-[28px] font-bold leading-tight text-primary-600 md:text-[32px]">{{ tag_name }}</h1>
                     {% else %}
-                        <p class="mb-2 text-[13px] font-medium text-muted-foreground">Published notes</p>
-                        <h1 class="m-0 font-headline text-[28px] font-bold leading-tight text-primary-600 md:text-[32px]">{% trans 'recent articles' %}</h1>
+                        <p class="mb-2 text-[13px] font-medium text-muted-foreground">AI curated engineering notes</p>
+                        <h1 class="m-0 font-headline text-[28px] font-bold leading-tight text-primary-600 md:text-[32px]">技术摘要</h1>
+                        <p class="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
+                            AI 精选与摘要技术文章、编程实践和人工智能新闻。
+                        </p>
                     {% endif %}
                 </div>
             </div>
