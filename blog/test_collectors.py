@@ -8,6 +8,7 @@ from django.utils import timezone
 from blog.services.collectors import (
     DEFAULT_TECH_FEEDS,
     entry_published_at,
+    is_before_cutoff,
     get_env_int,
     get_optional_env_int,
     parse_feed_entries,
@@ -83,6 +84,12 @@ class FeedCollectorParsingTest(SimpleTestCase):
         self.assertIsNotNone(published_at)
         self.assertTrue(timezone.is_aware(published_at))
         self.assertTrue(published_at > cutoff)
+
+    def test_is_before_cutoff_handles_aware_published_at_and_naive_cutoff(self):
+        published_at = datetime(2026, 5, 13, 10, 30, 0, tzinfo=datetime_timezone.utc)
+        cutoff = datetime(2026, 5, 13, 9, 0, 0)
+
+        self.assertFalse(is_before_cutoff(published_at, cutoff))
 
 
 class FeedCollectorConfigTest(SimpleTestCase):

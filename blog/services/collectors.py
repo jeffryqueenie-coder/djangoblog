@@ -187,7 +187,7 @@ def collect_tech_articles(limit=5, feeds=None, hours=None):
                 result.skipped += 1
                 continue
             published_at = entry_published_at(entry)
-            if cutoff and published_at and published_at < cutoff:
+            if is_before_cutoff(published_at, cutoff):
                 result.skipped += 1
                 continue
             entry['published_at'] = published_at
@@ -341,6 +341,20 @@ def feed_entry_timestamp(entry):
 
 def entry_published_at(entry):
     return normalize_aware_datetime(entry.get('published_at'))
+
+
+def is_before_cutoff(value, cutoff):
+    value = normalize_naive_datetime(value)
+    cutoff = normalize_naive_datetime(cutoff)
+    return bool(value and cutoff and value < cutoff)
+
+
+def normalize_naive_datetime(value):
+    if value is None:
+        return None
+    if timezone.is_aware(value):
+        return timezone.make_naive(value, timezone.get_current_timezone())
+    return value
 
 
 def normalize_aware_datetime(value):
