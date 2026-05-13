@@ -23,6 +23,10 @@ logger = logging.getLogger(__name__)
 _manifest_cache = None
 
 
+def is_vite_dev_enabled():
+    return settings.DEBUG and os.environ.get('VITE_DEV_MODE', 'False').lower() == 'true'
+
+
 def load_manifest():
     """
     加载Vite生成的manifest.json文件
@@ -50,9 +54,7 @@ def load_manifest():
             logger.info(f'✅ Vite manifest loaded from: {manifest_path}')
             return manifest
     except FileNotFoundError:
-        # 开发模式下manifest可能不存在
-        logger.warning(f'⚠️  Vite manifest not found: {manifest_path}')
-        logger.warning('🔧 Running in development mode. Make sure Vite dev server is running.')
+        logger.warning(f'Vite manifest not found: {manifest_path}')
         return {}
     except json.JSONDecodeError as e:
         logger.error(f'❌ Failed to parse manifest.json: {e}')
@@ -79,9 +81,12 @@ def vite_asset(entry_name):
         file_path = manifest[entry_name]['file']
         return static(f'blog/dist/{file_path}')
 
-    # 开发模式回退到Vite开发服务器
-    vite_dev_server = getattr(settings, 'VITE_DEV_SERVER_URL', 'http://localhost:5173')
-    return f'{vite_dev_server}/{entry_name}'
+    if is_vite_dev_enabled():
+        vite_dev_server = getattr(settings, 'VITE_DEV_SERVER_URL', 'http://localhost:5173')
+        return f'{vite_dev_server}/{entry_name}'
+
+    logger.error(f'Vite entry "{entry_name}" unavailable because manifest is missing')
+    return ''
 
 
 @register.simple_tag
@@ -103,8 +108,10 @@ def vite_js(entry_name='src/main.js'):
     """
     manifest = load_manifest()
 
-    # 开发模式：使用Vite开发服务器
     if not manifest:
+        if not is_vite_dev_enabled():
+            logger.error(f'Vite manifest is missing; skip loading "{entry_name}"')
+            return ''
         vite_dev_server = getattr(settings, 'VITE_DEV_SERVER_URL', 'http://localhost:5173')
         return mark_safe(f'''
             <!-- Vite开发模式 -->
@@ -214,7 +221,7 @@ def is_vite_dev_mode():
         {% endif %}
     """
     manifest = load_manifest()
-    return not bool(manifest)
+    return is_vite_dev_enabled() and not bool(manifest)
 
 
 @register.simple_tag
@@ -228,4 +235,6 @@ def vite_dev_server_url():
     用法：
         {% vite_dev_server_url %}
     """
+    if not is_vite_dev_enabled():
+        return ''
     return getattr(settings, 'VITE_DEV_SERVER_URL', 'http://localhost:5173')

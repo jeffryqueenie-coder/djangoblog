@@ -26,6 +26,8 @@ WEB_HOST=0.0.0.0
 WEB_PORT=8000
 DJANGOBLOG_PYTHON=/path/to/venv/bin/python
 DJANGOBLOG_GUNICORN=/path/to/venv/bin/gunicorn
+BUILD_FRONTEND=True
+NPM_REGISTRY=https://registry.npmmirror.com/
 COLLECTOR_INTERVAL=1800
 ```
 
@@ -45,6 +47,8 @@ Restart after config or code changes:
 ```bash
 supervisorctl restart djangoblog:
 ```
+
+The web process runs `npm ci`, `npm run build`, `collectstatic`, and `compress --force` before Gunicorn when `BUILD_FRONTEND=True` or when the Vite manifest is missing. This is required when serving the app directly from Gunicorn/Supervisor without Docker.
 
 Logs:
 

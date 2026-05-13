@@ -67,6 +67,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
 
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.locale.LocaleMiddleware',
     'django.middleware.gzip.GZipMiddleware',
@@ -434,7 +435,15 @@ COMPRESS_CSS_COMPRESSOR = 'compressor.css.CssCompressor'
 COMPRESS_JS_COMPRESSOR = 'compressor.js.JsCompressor'
 
 # 静态文件缓存配置
-STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.ManifestStaticFilesStorage'
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
+STORAGES = {
+    'default': {
+        'BACKEND': 'django.core.files.storage.FileSystemStorage',
+    },
+    'staticfiles': {
+        'BACKEND': 'whitenoise.storage.CompressedStaticFilesStorage',
+    },
+}
 
 # 浏览器缓存配置（通过中间件或服务器配置）
 COMPRESS_URL = STATIC_URL
@@ -460,4 +469,3 @@ ACTIVE_PLUGINS = [
     'article_recommendation',
     'cloudflare_cache',  # Cloudflare缓存管理插件
 ]
-

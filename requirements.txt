@@ -41,6 +41,7 @@ simplejson==3.20.2
 tzdata==2026.2
 user-agents==2.2.0
 WeRoBot==1.13.1
+whitenoise==6.11.0
 Whoosh==2.7.4
 jsonpickle==4.1.1
 beautifulsoup4==4.14.3
