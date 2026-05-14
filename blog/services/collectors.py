@@ -94,19 +94,6 @@ class CollectorResult:
     failed: int = 0
 
 
-CATEGORY_KEYWORDS = (
-    ('前端开发', ('react', 'vue', 'next.js', 'nextjs', 'typescript', 'javascript', 'css', 'web', '浏览器', 'chrome', '前端')),
-    ('后端开发', ('go', 'golang', 'python', 'django', 'flask', 'fastapi', 'java', 'spring', 'node', 'node.js', 'api', 'server', '后端')),
-    ('云原生', ('kubernetes', 'docker', 'container', 'helm', 'istio', 'service mesh', 'cloud native', '云原生')),
-    ('数据库', ('postgresql', 'mysql', 'redis', 'sql', 'database', '数据库', '缓存')),
-    ('AI 工程', ('openai', 'llm', 'rag', 'hugging face', 'pytorch', 'tensorflow', 'model', '模型', '推理', 'agent', 'ai')),
-    ('架构设计', ('architecture', 'scaling', 'distributed', 'microservice', '系统设计', '架构', '分布式', '可扩展')),
-    ('工程效能', ('ci/cd', 'cicd', 'devops', 'testing', 'observability', 'platform', '工程效率', '工程效能', '测试')),
-    ('安全与可观测', ('security', 'trace', 'tracing', 'monitoring', 'otel', 'observability', '安全', '监控')),
-    ('云平台', ('aws', 'gcp', 'azure', 'cloudflare', 'serverless', '云平台')),
-    ('全栈实践', ('全栈', '实践', '产品工程', 'engineering', '开发者体验', 'dx')),
-)
-
 TAG_KEYWORDS = {
     'React': ('react',),
     'Vue': ('vue',),
@@ -336,10 +323,11 @@ def publish_rewritten_article(entry, body):
     body = strip_source_link_lines(body)
     title = extract_markdown_title(body) or entry['title']
     body = strip_leading_markdown_title(body, title)
+    pub_time = clamp_future_pub_time(normalize_model_datetime(entry['published_at']))
     article = Article.objects.create(
         title=title[:200],
         body=append_source_link(body, entry['url']),
-        pub_time=normalize_model_datetime(entry['published_at']) or timezone.now(),
+        pub_time=pub_time or timezone.now(),
         status='p',
         type='a',
         comment_status='c',
@@ -438,7 +426,6 @@ def deduplicate_feed_configs(configs):
 
 
 def determine_article_taxonomy(entry):
-    feed_category = (entry.get('feed_category') or '').strip()
     feed_tags = tuple(dict.fromkeys(entry.get('feed_tags') or ()))
     combined_text = ' '.join(
         filter(
@@ -448,47 +435,42 @@ def determine_article_taxonomy(entry):
                 entry.get('summary') or '',
                 entry.get('source_name') or '',
                 ' '.join(feed_tags),
-                feed_category,
             ],
         )
     ).lower()
 
-    category_name = feed_category or infer_category_from_text(combined_text)
+    category_name = '文章'
     detected_tags = list(feed_tags)
     for tag_name, keywords in TAG_KEYWORDS.items():
         if any(keyword in combined_text for keyword in keywords):
             detected_tags.append(tag_name)
-    detected_tags.extend(default_tags_for_category(category_name))
+    detected_tags.extend(default_tags_for_entry(combined_text))
     return category_name, tuple(dict.fromkeys(tag for tag in detected_tags if tag))
 
 
-def infer_category_from_text(text):
-    best_category = '全栈实践'
-    best_score = 0
-    for category_name, keywords in CATEGORY_KEYWORDS:
-        score = sum(1 for keyword in keywords if keyword in text)
-        if score > best_score:
-            best_category = category_name
-            best_score = score
-    if best_score > 0:
-        return best_category
-    return '全栈实践'
-
-
-def default_tags_for_category(category_name):
-    defaults = {
-        '前端开发': ('前端',),
-        '后端开发': ('后端',),
-        '云原生': ('云原生',),
-        '数据库': ('数据库',),
-        'AI 工程': ('AI',),
-        '架构设计': ('架构设计',),
-        '工程效能': ('工程效能',),
-        '安全与可观测': ('安全', '可观测性'),
-        '云平台': ('云平台',),
-        '全栈实践': ('全栈',),
-    }
-    return defaults.get(category_name, ())
+def default_tags_for_entry(text):
+    defaults = []
+    if any(keyword in text for keyword in ('react', 'vue', 'next.js', 'nextjs', 'typescript', 'javascript', 'css', 'web', '浏览器', 'chrome', '前端')):
+        defaults.append('前端')
+    if any(keyword in text for keyword in ('go', 'golang', 'python', 'django', 'flask', 'fastapi', 'java', 'spring', 'node', 'node.js', 'api', 'server', '后端')):
+        defaults.append('后端')
+    if any(keyword in text for keyword in ('kubernetes', 'docker', 'container', 'helm', 'istio', 'service mesh', 'cloud native', '云原生')):
+        defaults.append('云原生')
+    if any(keyword in text for keyword in ('postgresql', 'mysql', 'redis', 'sql', 'database', '数据库', '缓存')):
+        defaults.append('数据库')
+    if any(keyword in text for keyword in ('openai', 'llm', 'rag', 'hugging face', 'pytorch', 'tensorflow', 'model', '模型', '推理', 'agent', 'ai')):
+        defaults.append('AI')
+    if any(keyword in text for keyword in ('architecture', 'scaling', 'distributed', 'microservice', '系统设计', '架构', '分布式', '可扩展')):
+        defaults.append('架构设计')
+    if any(keyword in text for keyword in ('ci/cd', 'cicd', 'devops', 'testing', 'observability', 'platform', '工程效率', '工程效能', '测试')):
+        defaults.append('工程效能')
+    if any(keyword in text for keyword in ('security', 'trace', 'tracing', 'monitoring', 'otel', '安全', '监控')):
+        defaults.extend(['安全', '可观测性'])
+    if any(keyword in text for keyword in ('aws', 'gcp', 'azure', 'cloudflare', 'serverless', '云平台')):
+        defaults.append('云平台')
+    if any(keyword in text for keyword in ('全栈', '实践', 'product engineering', 'engineering', '开发者体验', 'dx')):
+        defaults.append('全栈')
+    return tuple(dict.fromkeys(defaults))
 
 
 def sort_feed_entries(entries):
@@ -592,6 +574,15 @@ def normalize_model_datetime(value):
         return None
     if timezone.is_aware(value):
         return timezone.make_naive(value, timezone.get_current_timezone())
+    return value
+
+
+def clamp_future_pub_time(value):
+    if value is None:
+        return None
+    now_value = normalize_model_datetime(timezone.now()) or timezone.now()
+    if value > now_value:
+        return now_value
     return value
 
 

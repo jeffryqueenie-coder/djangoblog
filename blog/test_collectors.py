@@ -1,5 +1,5 @@
 import os
-from datetime import datetime, timezone as datetime_timezone
+from datetime import datetime, timedelta, timezone as datetime_timezone
 from types import SimpleNamespace
 from unittest.mock import Mock, patch
 
@@ -141,7 +141,7 @@ class FeedCollectorConfigTest(SimpleTestCase):
             'feed_tags': ('InfoQ', '全栈'),
         })
 
-        self.assertEqual(category_name, '数据库')
+        self.assertEqual(category_name, '文章')
         self.assertIn('PostgreSQL', tag_names)
         self.assertIn('Redis', tag_names)
         self.assertIn('数据库', tag_names)
@@ -167,7 +167,7 @@ class FeedCollectorPublishingTest(SimpleTestCase):
     ):
         from blog.services.collectors import publish_rewritten_article
 
-        fake_category = SimpleNamespace(name='后端开发')
+        fake_category = SimpleNamespace(name='文章')
         fake_author = SimpleNamespace(username='collector-admin')
         fake_article = Mock()
         fake_article.tags = Mock()
@@ -190,6 +190,42 @@ class FeedCollectorPublishingTest(SimpleTestCase):
         )
 
         self.assertIs(article, fake_article)
-        category_get_or_create_mock.assert_called_once_with(name='后端开发')
+        category_get_or_create_mock.assert_called_once_with(name='文章')
         added_tag_names = [call.args[0].name for call in fake_article.tags.add.call_args_list]
         self.assertEqual(set(added_tag_names), {'Go', '并发', '后端'})
+
+    @patch('blog.services.collectors.timezone.now')
+    @patch('blog.services.collectors.Tag.objects.get_or_create')
+    @patch('blog.services.collectors.Article.objects.create')
+    @patch('blog.services.collectors.Category.objects.get_or_create')
+    @patch('blog.services.collectors.get_default_author')
+    def test_publish_rewritten_article_clamps_future_pub_time(
+        self,
+        get_default_author_mock,
+        category_get_or_create_mock,
+        article_create_mock,
+        tag_get_or_create_mock,
+        timezone_now_mock,
+    ):
+        from blog.services.collectors import publish_rewritten_article
+
+        fixed_now = datetime(2026, 5, 14, 21, 30, 0)
+        timezone_now_mock.return_value = fixed_now
+        get_default_author_mock.return_value = SimpleNamespace(username='collector-admin')
+        category_get_or_create_mock.return_value = (SimpleNamespace(name='文章'), True)
+        article_create_mock.return_value = Mock(tags=Mock())
+        tag_get_or_create_mock.side_effect = lambda name: (SimpleNamespace(name=name), True)
+
+        publish_rewritten_article(
+            {
+                'title': 'Future-dated feed entry',
+                'summary': 'A feed item that landed slightly ahead of local time.',
+                'url': 'https://example.com/future-entry',
+                'published_at': fixed_now + timedelta(hours=8),
+                'feed_category': 'AI 工程',
+                'feed_tags': ('OpenAI',),
+            },
+            '# Future-dated feed entry\n\nExample content.',
+        )
+
+        self.assertEqual(article_create_mock.call_args.kwargs['pub_time'], fixed_now)
