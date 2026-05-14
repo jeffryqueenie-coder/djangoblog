@@ -90,3 +90,5 @@ img/
 .specify/
 specs/
 .interface-design/
+AGENTS.md
+CLAUDE.md
