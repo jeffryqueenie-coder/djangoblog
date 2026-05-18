@@ -8,6 +8,7 @@ from unittest.mock import patch
 from scripts.export_mysql_to_sqlite import (
     add_project_root_to_path,
     build_sqlite_database_config,
+    table_names_to_clear_after_migrate,
     load_env_file,
     parse_args,
 )
@@ -72,3 +73,12 @@ class ExportMysqlToSqliteScriptTest(TestCase):
         config = build_sqlite_database_config(Path('/tmp/blog.sqlite3'), timeout=30)
 
         self.assertIsNone(config['TIME_ZONE'])
+
+    def test_table_names_to_clear_after_migrate_keeps_migration_history(self):
+        tables = table_names_to_clear_after_migrate([
+            'auth_permission',
+            'django_content_type',
+            'django_migrations',
+        ])
+
+        self.assertEqual(tables, ['auth_permission', 'django_content_type'])

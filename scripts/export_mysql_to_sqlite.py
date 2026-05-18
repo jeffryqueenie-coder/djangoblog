@@ -77,6 +77,14 @@ def build_sqlite_database_config(sqlite_path, timeout):
     }
 
 
+def table_names_to_clear_after_migrate(table_names):
+    return sorted(
+        table
+        for table in table_names
+        if table != 'django_migrations'
+    )
+
+
 def _configure_django(sqlite_path):
     project_root = Path(__file__).resolve().parent.parent
     add_project_root_to_path(project_root)
@@ -115,6 +123,7 @@ def _prepare_destination(path, overwrite):
 
 def _migrate_sqlite_database():
     from django.core.management import call_command
+    from django.db import connections
 
     call_command(
         'migrate',
@@ -122,12 +131,16 @@ def _migrate_sqlite_database():
         interactive=False,
         verbosity=1,
     )
-    call_command(
-        'flush',
-        database='sqlite_target',
-        interactive=False,
-        verbosity=0,
-    )
+    connection = connections['sqlite_target']
+    table_names = table_names_to_clear_after_migrate(connection.introspection.table_names())
+    with connection.cursor() as cursor:
+        cursor.execute('PRAGMA foreign_keys = OFF;')
+        try:
+            for table_name in table_names:
+                quoted_name = connection.ops.quote_name(table_name)
+                cursor.execute(f'DELETE FROM {quoted_name};')
+        finally:
+            cursor.execute('PRAGMA foreign_keys = ON;')
 
 
 def _copy_data_to_sqlite():
