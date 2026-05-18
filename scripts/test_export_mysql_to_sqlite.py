@@ -7,6 +7,7 @@ from unittest.mock import patch
 
 from scripts.export_mysql_to_sqlite import (
     add_project_root_to_path,
+    build_sqlite_database_config,
     load_env_file,
     parse_args,
 )
@@ -66,3 +67,8 @@ class ExportMysqlToSqliteScriptTest(TestCase):
             add_project_root_to_path(project_root)
 
             self.assertEqual(sys.path, [str(project_root), str(project_root / 'scripts')])
+
+    def test_build_sqlite_database_config_uses_no_database_timezone(self):
+        config = build_sqlite_database_config(Path('/tmp/blog.sqlite3'), timeout=30)
+
+        self.assertIsNone(config['TIME_ZONE'])

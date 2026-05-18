@@ -51,6 +51,32 @@ def load_env_file(path):
             os.environ[key] = value
 
 
+def build_sqlite_database_config(sqlite_path, timeout):
+    return {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': str(sqlite_path),
+        'USER': '',
+        'PASSWORD': '',
+        'HOST': '',
+        'PORT': '',
+        'OPTIONS': {
+            'timeout': timeout,
+        },
+        'TIME_ZONE': None,
+        'CONN_HEALTH_CHECKS': False,
+        'CONN_MAX_AGE': 0,
+        'AUTOCOMMIT': True,
+        'ATOMIC_REQUESTS': False,
+        'TEST': {
+            'CHARSET': None,
+            'COLLATION': None,
+            'MIGRATE': True,
+            'MIRROR': None,
+            'NAME': None,
+        },
+    }
+
+
 def _configure_django(sqlite_path):
     project_root = Path(__file__).resolve().parent.parent
     add_project_root_to_path(project_root)
@@ -65,29 +91,10 @@ def _configure_django(sqlite_path):
     from django.db import connections
 
     mysql_config = settings.DATABASES['default'].copy()
-    sqlite_config = {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': str(sqlite_path),
-        'USER': '',
-        'PASSWORD': '',
-        'HOST': '',
-        'PORT': '',
-        'OPTIONS': {
-            'timeout': int(os.environ.get('DJANGO_SQLITE_TIMEOUT') or 30),
-        },
-        'TIME_ZONE': settings.TIME_ZONE,
-        'CONN_HEALTH_CHECKS': False,
-        'CONN_MAX_AGE': 0,
-        'AUTOCOMMIT': True,
-        'ATOMIC_REQUESTS': False,
-        'TEST': {
-            'CHARSET': None,
-            'COLLATION': None,
-            'MIGRATE': True,
-            'MIRROR': None,
-            'NAME': None,
-        },
-    }
+    sqlite_config = build_sqlite_database_config(
+        sqlite_path,
+        timeout=int(os.environ.get('DJANGO_SQLITE_TIMEOUT') or 30),
+    )
     settings.DATABASES['mysql_source'] = mysql_config
     settings.DATABASES['sqlite_target'] = sqlite_config
     connections.databases['mysql_source'] = mysql_config
