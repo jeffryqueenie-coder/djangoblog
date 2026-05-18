@@ -1,10 +1,15 @@
 import os
+import sys
 import tempfile
 from pathlib import Path
 from unittest import TestCase
 from unittest.mock import patch
 
-from scripts.export_mysql_to_sqlite import load_env_file, parse_args
+from scripts.export_mysql_to_sqlite import (
+    add_project_root_to_path,
+    load_env_file,
+    parse_args,
+)
 
 
 class ExportMysqlToSqliteScriptTest(TestCase):
@@ -47,3 +52,17 @@ class ExportMysqlToSqliteScriptTest(TestCase):
 
                 self.assertEqual(os.environ['DJANGO_MYSQL_USER'], 'existing_user')
                 self.assertEqual(os.environ['DJANGO_MYSQL_PASSWORD'], 'quoted password')
+
+    def test_add_project_root_to_path_prepends_missing_project_root(self):
+        project_root = Path('/tmp/project').resolve()
+        with patch.object(sys, 'path', [str(project_root / 'scripts')]):
+            add_project_root_to_path(project_root)
+
+            self.assertEqual(sys.path[0], str(project_root))
+
+    def test_add_project_root_to_path_does_not_duplicate_existing_project_root(self):
+        project_root = Path('/tmp/project').resolve()
+        with patch.object(sys, 'path', [str(project_root), str(project_root / 'scripts')]):
+            add_project_root_to_path(project_root)
+
+            self.assertEqual(sys.path, [str(project_root), str(project_root / 'scripts')])

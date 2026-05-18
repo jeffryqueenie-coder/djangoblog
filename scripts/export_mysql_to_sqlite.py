@@ -5,6 +5,12 @@ import sys
 from pathlib import Path
 
 
+def add_project_root_to_path(project_root):
+    project_root = str(Path(project_root).resolve())
+    if project_root not in sys.path:
+        sys.path.insert(0, project_root)
+
+
 def parse_args(argv=None):
     parser = argparse.ArgumentParser(
         description='Export the configured MySQL Django database to SQLite.'
@@ -46,6 +52,8 @@ def load_env_file(path):
 
 
 def _configure_django(sqlite_path):
+    project_root = Path(__file__).resolve().parent.parent
+    add_project_root_to_path(project_root)
     os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'djangoblog.settings')
     os.environ['DJANGO_DATABASE_ENGINE'] = 'mysql'
 
