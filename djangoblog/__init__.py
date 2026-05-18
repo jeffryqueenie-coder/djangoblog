@@ -1,5 +1,9 @@
-import pymysql
+try:
+    import pymysql
+except ImportError:
+    pymysql = None
 
-pymysql.install_as_MySQLdb()
+if pymysql is not None:
+    pymysql.install_as_MySQLdb()
 
 default_app_config = 'djangoblog.apps.DjangoblogAppConfig'

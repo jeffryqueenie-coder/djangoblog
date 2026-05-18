@@ -64,6 +64,35 @@
 
 ## 内容采集与改写
 
+## 数据库选择：MySQL 或 SQLite
+
+默认仍使用 MySQL。低内存单机部署可以切换到 SQLite，减少 MySQL 服务的常驻内存占用：
+
+```env
+DJANGO_DATABASE_ENGINE=sqlite
+DJANGO_SQLITE_PATH=/root/project/djangoblog/db.sqlite3
+DJANGO_SQLITE_TIMEOUT=30
+```
+
+保留 MySQL 时继续使用：
+
+```env
+DJANGO_DATABASE_ENGINE=mysql
+DJANGO_MYSQL_DATABASE=djangoblog
+DJANGO_MYSQL_USER=djangoblog
+DJANGO_MYSQL_PASSWORD=change-me
+DJANGO_MYSQL_HOST=127.0.0.1
+DJANGO_MYSQL_PORT=3306
+```
+
+从当前 MySQL 导出 SQLite 文件：
+
+```bash
+python scripts/export_mysql_to_sqlite.py --sqlite-path /root/project/djangoblog/db.sqlite3
+```
+
+如果目标文件已存在，脚本会拒绝覆盖；确认替换时加 `--overwrite`。导出完成后，把 `.env` 切到 `DJANGO_DATABASE_ENGINE=sqlite` 并重启 Django 服务。
+
 ### 1. 技术文章
 
 技术文章抓取逻辑位于：
